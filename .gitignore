@@ -1,0 +1,5 @@
+node_modules/
+checks/*.png
+checks/*.pdf
+*.tar.gz
+*.zip
