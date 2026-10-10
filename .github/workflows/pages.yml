@@ -18,10 +18,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
       - run: npm run check && npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run test:advanced
+      - name: Package validated site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
       - name: Keep browser screenshots and generated PDF
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,9 +49,6 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
       - name: Publish
         id: deploy
         uses: actions/deploy-pages@v4

@@ -15,12 +15,14 @@ export function authorize(clientId){
   });
 }
 export function disconnect(){accessToken=null;expires=0;}
-async function api(path,options={}){
+async function api(path,options={},attempt=0){
   if(!connected())throw Error('انتهت جلسة Drive. اربط الحساب من جديد.');
   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),90000);
   try{
-    const response=await fetch(`https://www.googleapis.com/${path}`,{...options,signal:abort.signal,headers:{...options.headers,Authorization:`Bearer ${accessToken}`}});
-    if(!response.ok){if(response.status===401)disconnect();throw Error(`تعذر اتصال Drive (${response.status}). لم تُحذف ملفاتك.`);}
+    const url=path.startsWith('https://')?new URL(path):new URL(path,'https://www.googleapis.com/');if(url.origin!=='https://www.googleapis.com'||!url.pathname.includes('/drive/'))throw Error('عنوان Drive غير صالح');
+    const response=await fetch(url.href,{...options,signal:abort.signal,headers:{...options.headers,Authorization:`Bearer ${accessToken}`}});
+    if(response.status===308)return response;
+    if(!response.ok){if((response.status===429||response.status>=500)&&attempt<2){await new Promise(r=>setTimeout(r,500*(attempt+1)));return api(path,options,attempt+1);}if(response.status===401)disconnect();throw Error(`تعذر اتصال Drive (${response.status}). لم تُحذف ملفاتك.`);}
     return response;
   }finally{clearTimeout(timer);}
 }
@@ -37,7 +39,7 @@ export async function syncDrive(progress=()=>{}){
     knownRevs.add(`${metadata.id}:${metadata.rev}`);
     if(!byDocument.has(metadata.id))byDocument.set(metadata.id,[]);byDocument.get(metadata.id).push(metadata);
   }
-  localStorage.setItem(cacheKey,JSON.stringify(cache));
+  try{localStorage.setItem(cacheKey,JSON.stringify(cache));}catch{/* Metadata cache is optional. Never fail a sync because its cache is full. */}
   let changed=0;
   for(const [documentId,snapshots] of byDocument){
     const locals=await allDocs(),local=locals.find(d=>d.id===documentId);
@@ -62,10 +64,31 @@ export async function syncDrive(progress=()=>{}){
     const encoded=await encodeDoc(doc),payload=JSON.stringify(encoded);
     if(new Blob([payload]).size>50*1024*1024)throw Error('هذا المستند كبير للمزامنة الحالية. قسّمه إلى مستندات أصغر؛ بياناتك المحلية باقية.');
     const metadata={name:`${doc.id}-${doc.rev}.waraqa`,parents:['appDataFolder'],appProperties:{app:'waraqa-web-v1',document:doc.id,revision:doc.rev}};
-    const boundary=`waraqa-${id()}`;
-    const body=new Blob([`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n`,payload,`\r\n--${boundary}--\r\n`]);
-    await api('upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${boundary}`},body});changed++;
+    await uploadSnapshot(metadata,payload,account,progress);changed++;
   }
   localStorage.setItem('waraqa-last-sync',new Date().toISOString());
   return{changed,email:user.user.emailAddress};
+}
+
+export async function purgeDeleted(){
+ await syncDrive();const deleted=(await allDocs()).filter(d=>d.deleted);let count=0,next='';
+ do{const result=await(await api(`drive/v3/files?spaces=appDataFolder&pageSize=1000&fields=nextPageToken,files(id,appProperties)&q=trashed%3Dfalse${next?`&pageToken=${encodeURIComponent(next)}`:''}`)).json();for(const file of result.files){const props=file.appProperties;if(props?.app!=='waraqa-web-v1')continue;const tombstone=deleted.find(d=>d.id===props.document);if(tombstone&&props.revision!==tombstone.rev){await api(`drive/v3/files/${encodeURIComponent(file.id)}`,{method:'DELETE'});count++;}}next=result.nextPageToken||'';}while(next);return count;
+}
+
+export function uploadedOffset(range,total){if(!range)return 0;const match=/^bytes=0-(\d+)$/.exec(range);if(!match)throw Error('رد استئناف غير صالح');const offset=Number(match[1])+1;if(!Number.isSafeInteger(offset)||offset<0||offset>total)throw Error('موضع رفع غير صالح');return offset;}
+async function uploadSnapshot(metadata,payload,account,progress){
+ const bytes=new TextEncoder().encode(payload),total=bytes.length,key=`waraqa-upload-${account}-${metadata.appProperties.document}-${metadata.appProperties.revision}`;
+ let session=null;try{session=JSON.parse(localStorage.getItem(key)||'null');}catch{}
+ const save=()=>{try{localStorage.setItem(key,JSON.stringify(session));}catch{}};
+ let offset=0;
+ if(session?.url&&session.total===total){try{const status=await api(session.url,{method:'PUT',headers:{'Content-Range':`bytes */${total}`}});if(status.ok){localStorage.removeItem(key);return;}offset=uploadedOffset(status.headers.get('Range'),total);}catch{session=null;}}
+ if(!session){const response=await api('upload/drive/v3/files?uploadType=resumable',{method:'POST',headers:{'Content-Type':'application/json','X-Upload-Content-Type':'application/json','X-Upload-Content-Length':String(total)},body:JSON.stringify(metadata)});const url=response.headers.get('Location');if(!url)throw Error('تعذر بدء رفع قابل للاستئناف');session={url,total};save();}
+ const chunkSize=2*1024*1024;
+ while(offset<total){
+  const end=Math.min(total,offset+chunkSize);progress(`رفع «${metadata.name.split('-')[0]}»: ${Math.round(offset/total*100)}٪`);
+  const response=await api(session.url,{method:'PUT',headers:{'Content-Type':'application/json','Content-Range':`bytes ${offset}-${end-1}/${total}`},body:bytes.slice(offset,end)});
+  if(response.ok){localStorage.removeItem(key);return;}
+  const next=uploadedOffset(response.headers.get('Range'),total);if(next<=offset)throw Error('توقف الرفع. يمكنك استئنافه بالمزامنة مرة أخرى.');offset=next;save();
+ }
+ localStorage.removeItem(key);
 }

@@ -3,3 +3,7 @@ checks/*.png
 checks/*.pdf
 *.tar.gz
 *.zip
+
+dist/vendor/
+checks/fixtures/
+assets/*.ttf

@@ -41,6 +41,7 @@ export async function splitPage(blob,vertical,fractions,reverse=false){
 }
 export async function rotate(blob){const img=await image(blob);try{const c=makeCanvas(img.height,img.width),ctx=c.getContext('2d');ctx.translate(c.width/2,c.height/2);ctx.rotate(Math.PI/2);ctx.drawImage(img,-img.width/2,-img.height/2);return c;}finally{img.close();}}
 export async function enhance(blob,{filter='original',brightness=0,contrast=0}={}) {
+  if(filter==='clean'){const scanner=await import('./scanner.js');blob=await toBlob(await scanner.cleanBackground(blob));filter='original';}
   const img=await image(blob);const c=makeCanvas(img.width,img.height);try{c.getContext('2d').drawImage(img,0,0);}finally{img.close();}
   const ctx=c.getContext('2d'),pixels=ctx.getImageData(0,0,c.width,c.height),data=pixels.data;
   const factor=(259*(contrast+255))/(255*(259-contrast));
@@ -80,7 +81,7 @@ export async function perspectiveCrop(blob,points){
     const source=makeCanvas(img.width,img.height);source.getContext('2d').drawImage(img,0,0);
     const pixels=source.getContext('2d').getImageData(0,0,img.width,img.height).data,out=makeCanvas(w,h),ctx=out.getContext('2d'),dest=ctx.createImageData(w,h),mapping=homography(p);
     for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){const q=project(mapping,x/Math.max(w-1,1),y/Math.max(h-1,1));const sx=Math.max(0,Math.min(img.width-1,Math.round(q.x))),sy=Math.max(0,Math.min(img.height-1,Math.round(q.y))),si=(sy*img.width+sx)*4,di=(y*w+x)*4;dest.data.set(pixels.subarray(si,si+4),di);}
+      for(let x=0;x<w;x++){const q=project(mapping,x/Math.max(w-1,1),y/Math.max(h-1,1)),sx=Math.max(0,Math.min(img.width-1,q.x)),sy=Math.max(0,Math.min(img.height-1,q.y)),x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(img.width-1,x0+1),y1=Math.min(img.height-1,y0+1),fx=sx-x0,fy=sy-y0,di=(y*w+x)*4;for(let channel=0;channel<4;channel++){const a=pixels[(y0*img.width+x0)*4+channel],b=pixels[(y0*img.width+x1)*4+channel],c=pixels[(y1*img.width+x0)*4+channel],d=pixels[(y1*img.width+x1)*4+channel];dest.data[di+channel]=(a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy;}}
       if(y%100===0)await new Promise(resolve=>setTimeout(resolve,0));
     }ctx.putImageData(dest,0,0);return out;
   }finally{img.close();}

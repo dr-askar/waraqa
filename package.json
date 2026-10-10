@@ -1,14 +1,23 @@
 {
   "name": "waraqa-web",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test checks/*.test.mjs",
-    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/drive.js && node --check dist/sw.js",
-    "test:browser": "node checks/browser.mjs"
+    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/drive.js && node --check dist/sw.js && node --check dist/scanner.js && node --check dist/storage.js && node --check dist/ocr.js && node --check dist/pdf.js && node --check dist/encrypt-worker.js && node --check dist/i18n.js",
+    "test:browser": "node checks/browser.mjs",
+    "build": "node scripts/vendor.mjs",
+    "test:advanced": "node checks/advanced.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.0"
+  },
+  "dependencies": {
+    "@jspawn/qpdf-wasm": "0.0.2",
+    "@techstark/opencv-js": "4.10.0-release.1",
+    "jspdf": "4.2.1",
+    "pdfjs-dist": "4.10.38",
+    "tesseract.js": "6.0.1"
   }
 }
