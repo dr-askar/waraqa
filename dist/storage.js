@@ -51,7 +51,7 @@ export async function configureLock(password){
   activeKey=newKey;lockConfig=config;
 }
 
-function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),edited:!!value.edited};}
+function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),confidence:Number.isFinite(value.confidence)?value.confidence:undefined,quality:value.quality==='fast'?'fast':'best',deskewDegrees:Number.isFinite(value.deskewDegrees)?value.deskewDegrees:0,edited:!!value.edited};}
 
 async function historyJson(states=[]){const out=[];for(const state of states.slice(-3))out.push({...state,blob:await blobData(state.blob)});return out;}
 function historyFromJson(states){return Array.isArray(states)?states.slice(-3).map(state=>({...state,blob:dataBlob(state.blob),ocr:validateOcr(state.ocr)})):[];}

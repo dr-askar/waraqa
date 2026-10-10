@@ -19,7 +19,7 @@ try{
    if(variant===0){window.paperFixture=canvas.toDataURL('image/jpeg');const cropped=await scanner.autoCrop(await(await fetch(window.paperFixture)).blob());window.croppedFixture=cropped.blob;}
   }
   const blank=document.createElement('canvas');blank.width=400;blank.height=500;blank.getContext('2d').fillRect(0,0,400,500);results.push({blank:!(await scanner.detectCanvas(blank)).points});return results;
- });console.log('Detection measurements:',JSON.stringify(detection));for(const result of detection.slice(0,3)){assert.ok(result.confidence>=.77);assert.ok(result.error<.04);}assert.ok(detection[3].blank);
+ });console.log('Detection measurements:',JSON.stringify(detection));for(const result of detection.slice(0,3)){assert.ok(result.confidence>=.77);assert.ok(result.error<.01);}assert.ok(detection[3].blank);
  const fixture=await page.evaluate(()=>window.paperFixture.split(',')[1]);await page.locator('#files').setInputFiles({name:'photographed-paper.jpg',mimeType:'image/jpeg',buffer:Buffer.from(fixture,'base64')});await page.waitForSelector('.page-card');await page.waitForSelector('#busy',{state:'hidden'});
  assert.equal(await page.evaluate(async()=>{const db=await import('./storage.js');const [doc]=await db.allDocs();const original=await createImageBitmap(doc.pages[0].original);const result=doc.pages[0].width*doc.pages[0].height<original.width*original.height&&doc.pages[0].autoCropped;original.close();return result;}),true);
  const engines=await page.evaluate(async()=>{
