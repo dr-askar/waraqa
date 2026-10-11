@@ -25,6 +25,7 @@ jobs:
           WARAQA_GOOGLE_CLIENT_ID: ${{ vars.WARAQA_GOOGLE_CLIENT_ID }}
       - run: npm run check && npm test
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:formats
       - run: npm run test:ui
       - run: npm run test:browser
       - run: npm run test:advanced
@@ -41,6 +42,10 @@ jobs:
           path: |
             checks/*.png
             checks/*.pdf
+            checks/*.docx
+            checks/*.xlsx
+            checks/*.csv
+            checks/*.txt
           if-no-files-found: ignore
   deploy:
     needs: validate

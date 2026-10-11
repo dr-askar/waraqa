@@ -15,3 +15,6 @@ dialog{border:1px solid var(--line);border-radius:24px;padding:0;background:var(
 .action-menu.menu-up .menu-panel{top:auto;bottom:calc(100% + 7px)}
 
 .open-doc .ui-icon{transform:rotate(180deg)}html[dir=ltr] .open-doc .ui-icon{transform:none}html[dir=ltr] #back .ui-icon{transform:rotate(180deg)}
+
+.table-preview{max-height:340px;max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px;direction:ltr;background:var(--surface)}.table-preview table{border-collapse:collapse;min-width:100%}.table-preview th{position:sticky;top:0;background:var(--green-light);font-size:10px;color:var(--muted);padding:5px;min-width:25px}.table-preview td{border:1px solid var(--line);padding:0;min-width:105px}.table-preview input{border:0;border-radius:0;padding:9px;min-width:100px;font-size:11px;direction:auto}#table-export-options h3{font-size:13px}.table-preview:empty{min-height:60px}
+.actions-wrap button,.settings-block>button,.settings-block details>button{max-width:100%;white-space:normal;text-align:center}

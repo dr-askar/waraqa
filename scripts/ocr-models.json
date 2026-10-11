@@ -1,0 +1,134 @@
+{
+  "commits": {
+    "fast": "87416418657359cb625c412a48b6e1d6d41c29bd",
+    "best": "e12c65a915945e4c28e237a9b52bc4a8f39a0cec"
+  },
+  "languages": [
+    {
+      "code": "ara",
+      "name": "العربية",
+      "tag": "ar",
+      "hashes": {
+        "fast": "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729",
+        "best": "ab9d157d8e38ca00e7e39c7d5363a5239e053f5b0dbdb3167dde9d8124335896"
+      }
+    },
+    {
+      "code": "eng",
+      "name": "English",
+      "tag": "en",
+      "hashes": {
+        "fast": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+        "best": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      }
+    },
+    {
+      "code": "fra",
+      "name": "Français",
+      "tag": "fr",
+      "hashes": {
+        "fast": "ced037562e8c80c13122dece28dd477d399af80911a28791a66a63ac1e3445ca",
+        "best": "907743d98915c91a3906dfbf6e48b97598346698fe53aaa797e1a064ffcac913"
+      }
+    },
+    {
+      "code": "deu",
+      "name": "Deutsch",
+      "tag": "de",
+      "hashes": {
+        "fast": "19d219bbb6672c869d20a9636c6816a81eb9a71796cb93ebe0cb1530e2cdb22d",
+        "best": "8407331d6aa0229dc927685c01a7938fc5a641d1a9524f74838cdac599f0d06e"
+      }
+    },
+    {
+      "code": "spa",
+      "name": "Español",
+      "tag": "es",
+      "hashes": {
+        "fast": "6f2e04d02774a18f01bed44b1111f2cd7f3ba7ac9dc4373cd3f898a40ea6b464",
+        "best": "e2c1ffdad8b30f26c45d4017a9183d3a7f9aa69e59918be4f88b126fac99ab2c"
+      }
+    },
+    {
+      "code": "tur",
+      "name": "Türkçe",
+      "tag": "tr",
+      "hashes": {
+        "fast": "7393381111e1152420fc4092cb44eef4237580d21b92bf30d7d221aad192c6b7",
+        "best": "e0c3338dc17503dc7d335a507c9ae01b2b46cfd07561171e1e1ac55d85e8e438"
+      }
+    },
+    {
+      "code": "ita",
+      "name": "Italiano",
+      "tag": "it",
+      "hashes": {
+        "fast": "b8f89e1e785118dac4d51ae042c029a64edb5c3ee42ef73027a6d412748d8827",
+        "best": "8df9c89176fb93f56bf4b2d4ede04c01c1f31d4b7697fbd76cc336df700f3f38"
+      }
+    },
+    {
+      "code": "por",
+      "name": "Português",
+      "tag": "pt",
+      "hashes": {
+        "fast": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+        "best": "711de9dbb8052067bd42f16b9119967f30bada80d57e2ef24f65d09f531adb04"
+      }
+    },
+    {
+      "code": "rus",
+      "name": "Русский",
+      "tag": "ru",
+      "hashes": {
+        "fast": "e16e5e036cce1d9ec2b00063cf8b54472625b9e14d893a169e2b0dedeb4df225",
+        "best": "b617eb6830ffabaaa795dd87ea7fd251adfe9cf0efe05eb9a2e8128b7728d6b6"
+      }
+    },
+    {
+      "code": "fas",
+      "name": "فارسی",
+      "tag": "fa",
+      "hashes": {
+        "fast": "db1c0a91208aff00d3cf1ed2c1d23f76419afd5f024688b4f71adc3f2ce4a505",
+        "best": "99e420969b5ddd2cb135b416316a7ed417c59c4faf9e0d28941348f6448114df"
+      }
+    },
+    {
+      "code": "hin",
+      "name": "हिन्दी",
+      "tag": "hi",
+      "hashes": {
+        "fast": "4c73ffc59d497c186b19d1e90f5d721d678ea6b2e277b719bee4e2af12271825",
+        "best": "bd2e65a2184af08a167b0be2439e91fa5edbc4394399ca2f692b843ae26e78d6"
+      }
+    },
+    {
+      "code": "chi_sim",
+      "name": "简体中文",
+      "tag": "zh",
+      "hashes": {
+        "fast": "a5fcb6f0db1e1d6d8522f39db4e848f05984669172e584e8d76b6b3141e1f730",
+        "best": "4fef2d1306c8e87616d4d3e4c6c67faf5d44be3342290cf8f2f0f6e3aa7e735b"
+      }
+    },
+    {
+      "code": "jpn",
+      "name": "日本語",
+      "tag": "ja",
+      "hashes": {
+        "fast": "1f5de9236d2e85f5fdf4b3c500f2d4926f8d9449f28f5394472d9e8d83b91b4d",
+        "best": "36bdf9ac823f5911e624c30d0553e890b8abc7c31a65b3ef14da943658c40b79"
+      }
+    },
+    {
+      "code": "kor",
+      "name": "한국어",
+      "tag": "ko",
+      "hashes": {
+        "fast": "6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b2",
+        "best": "f888d4038348a0c3d25151e7f452bda0d74ca275b18cab146798bcbb94084fff"
+      }
+    }
+  ]
+}

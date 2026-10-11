@@ -7,3 +7,8 @@ checks/*.pdf
 dist/vendor/
 checks/fixtures/
 assets/*.ttf
+
+checks/*.docx
+checks/*.xlsx
+checks/*.csv
+checks/*.txt
