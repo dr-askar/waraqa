@@ -45,9 +45,9 @@ export async function configureLock(password){
   const salt=password?bytes64(crypto.getRandomValues(new Uint8Array(16))):null;
   const newKey=password?await derive(password,salt):null;
   const config=password?{salt,check:await encryptValue('waraqa-key-check',newKey)}:null;
-  const signature=await getUserPreference('signature');const signatureRecord=newKey&&signature?{sealed:true,...await encryptValue(signature,newKey)}:signature;
+  const preferences=[];for(const key of ['signature','folders']){const value=await getUserPreference(key);preferences.push({key:'user-'+key,value:newKey&&value!==null?{sealed:true,...await encryptValue(value,newKey)}:value});}
   const records=[];for(const document of documents)records.push(newKey?await seal(document,newKey):document);
-  await new Promise((resolve,reject)=>{const tx=db.transaction(['documents','meta'],'readwrite');const store=tx.objectStore('documents');store.clear();records.forEach(record=>store.put(record));tx.objectStore('meta').put({key:'lock',value:config});tx.objectStore('meta').put({key:'user-signature',value:signatureRecord});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+  await new Promise((resolve,reject)=>{const tx=db.transaction(['documents','meta'],'readwrite');const store=tx.objectStore('documents');store.clear();records.forEach(record=>store.put(record));tx.objectStore('meta').put({key:'lock',value:config});preferences.forEach(record=>tx.objectStore('meta').put(record));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
   activeKey=newKey;lockConfig=config;
 }
 
@@ -59,3 +59,12 @@ export async function encryptBackup(backup,password){if(password.length<8)throw 
 export async function decryptBackup(backup,password){if(backup.app!=='waraqa-encrypted'||backup.schema!==1)throw Error('صيغة النسخة المشفرة غير مدعومة');try{return await decryptValue(backup,await derive(password,backup.salt));}catch{throw Error('كلمة مرور النسخة غير صحيحة أو الملف تالف');}}
 export async function getUserPreference(key){const record=await metaGet('user-'+key);if(!record)return null;if(record.value?.sealed){if(!activeKey)throw Error('التطبيق مقفل');return decryptValue(record.value,activeKey);}return record.value;}
 export async function setUserPreference(key,value){if(lockConfig&&!activeKey)throw Error('التطبيق مقفل');const stored=activeKey?{sealed:true,...await encryptValue(value,activeKey)}:value;await new Promise((resolve,reject)=>{const tx=db.transaction('meta','readwrite');tx.objectStore('meta').put({key:'user-'+key,value:stored});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+
+// Rename/delete folder and update all affected revisions in a single transaction.
+export async function saveFolderOrganization(documents,folders){
+ if(lockConfig&&!activeKey)throw Error('التطبيق مقفل');
+ const updated=documents.map(d=>({...d,rev:id(),ancestors:[...(d.ancestors||[]),d.rev],updated:Date.now()}));
+ const records=[];for(const d of updated)records.push(activeKey?await seal(d,activeKey):d);
+ const value=activeKey?{sealed:true,...await encryptValue(folders,activeKey)}:folders;
+ await new Promise((resolve,reject)=>{const tx=db.transaction(['documents','meta'],'readwrite');records.forEach(d=>tx.objectStore('documents').put(d));tx.objectStore('meta').put({key:'user-folders',value});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+}
