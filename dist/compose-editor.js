@@ -9,14 +9,14 @@ export async function createComposeEditor(host,blobs,onChange=()=>{}){
  function sourceRect(i){const b=bitmaps[i],c=crops[i];return{x:c.x*b.width,y:c.y*b.height,w:c.w*b.width,h:c.h*b.height};}
  function draw(output=canvas,decorations=true){const ctx=output.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,output.width,output.height);
   zOrder.forEach(i=>{const f=frames[i],s=sourceRect(i);ctx.drawImage(bitmaps[i],s.x,s.y,s.w,s.h,f.x,f.y,f.w,f.h);});
-  if(decorations&&frames[active]){const f=frames[active],line=Math.max(3,board.w/250),handle=board.w/35;ctx.strokeStyle='#137a5b';ctx.lineWidth=line;ctx.setLineDash([board.w/70,board.w/100]);ctx.strokeRect(f.x,f.y,f.w,f.h);ctx.setLineDash([]);ctx.fillStyle='#137a5b';ctx.fillRect(f.x+f.w-handle/2,f.y+f.h-handle/2,handle,handle);ctx.font=`bold ${board.w/28}px Arial`;ctx.fillText(String(active+1),f.x+line*3,f.y+board.w/28);}
+  if(decorations&&frames[active]){const f=frames[active],line=Math.max(3,board.w/250),handle=board.w*24/Math.max(1,canvas.getBoundingClientRect().width);ctx.strokeStyle='#137a5b';ctx.lineWidth=line;ctx.setLineDash([board.w/70,board.w/100]);ctx.strokeRect(f.x,f.y,f.w,f.h);ctx.setLineDash([]);ctx.fillStyle='#137a5b';ctx.fillRect(f.x+f.w-handle/2,f.y+f.h-handle/2,handle,handle);ctx.font=`bold ${board.w/28}px Arial`;ctx.fillText(String(active+1),f.x+line*3,f.y+board.w/28);}
  }
  function changed(){if(disposed)return;draw();onChange({active,frames:frames.map(f=>({...f})),crops:crops.map(c=>({...c})),board:{...board}});}
  function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*board.w/r.width,y:(e.clientY-r.top)*board.h/r.height};}
  function hit(p,f){return p.x>=f.x&&p.x<=f.x+f.w&&p.y>=f.y&&p.y<=f.y+f.h;}
  function down(e){if(cropMode)return;e.preventDefault();const p=point(e);pointers.set(e.pointerId,p);canvas.setPointerCapture(e.pointerId);
   if(pointers.size===2){const [a,b]=[...pointers.values()];gesture={mode:'pinch',distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),frame:{...frames[active]}};return;}
-  const f=frames[active],r=board.w/20;const corner=f&&Math.hypot(p.x-f.x-f.w,p.y-f.y-f.h)<r;
+  const f=frames[active],r=board.w*24/Math.max(1,canvas.getBoundingClientRect().width);const corner=f&&Math.hypot(p.x-f.x-f.w,p.y-f.y-f.h)<r;
   if(!corner){const index=hit(p,frames[active])?active:zOrder.filter(i=>hit(p,frames[i])).at(-1);if(index===undefined){pointers.clear();return;}active=index;}
   gesture={mode:corner?'resize':'move',start:p,frame:{...frames[active]}};changed();
  }
@@ -25,7 +25,7 @@ export async function createComposeEditor(host,blobs,onChange=()=>{}){
   else if(g.mode==='move'){frames[active]={...f,x:Math.max(-f.w*.9,Math.min(board.w-f.w*.1,f.x+p.x-g.start.x)),y:Math.max(-f.h*.9,Math.min(board.h-f.h*.1,f.y+p.y-g.start.y))};}
   else if(g.mode==='resize'){const ratio=Math.max(.15,Math.min(6,((p.x-f.x)*f.w+(p.y-f.y)*f.h)/(f.w*f.w+f.h*f.h)));frames[active]={...f,w:f.w*ratio,h:f.h*ratio};}changed();
  }
- function up(e){pointers.delete(e.pointerId);gesture=null;pointers.clear();}
+ function up(e){pointers.delete(e.pointerId);gesture=null;if(pointers.size===1){const start=[...pointers.values()][0];gesture={mode:'move',start,frame:{...frames[active]}};}}
  canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
  canvas.onkeydown=e=>{const f=frames[active];if(!f)return;const delta=e.shiftKey?20:5,offset={ArrowLeft:[-delta,0],ArrowRight:[delta,0],ArrowUp:[0,-delta],ArrowDown:[0,delta]}[e.key];if(offset){e.preventDefault();f.x+=offset[0];f.y+=offset[1];changed();}};
  function preset({vertical=true,landscape=false,margin=35,size='a4',swap=false}={}){[board.w,board.h]=size==='letter'?(landscape?[1584,1224]:[1224,1584]):(landscape?[1684,1190]:[1190,1684]);canvas.width=board.w;canvas.height=board.h;const areas=cells(board.w,board.h,vertical,margin);frames=bitmaps.map((b,i)=>{const c=crops[i];return fitRect(b.width*c.w,b.height*c.h,areas[swap?1-i:i]);});changed();}
@@ -36,5 +36,5 @@ export async function createComposeEditor(host,blobs,onChange=()=>{}){
   view.onpointermove=e=>{if(!drag)return;e.preventDefault();const p=pos(e),base=drag.base;if(drag.corner<0)c=clampCrop({...base,x:base.x+p.x-drag.p.x,y:base.y+p.y-drag.p.y});else{let x0=base.x,y0=base.y,x1=base.x+base.w,y1=base.y+base.h;if([0,3].includes(drag.corner))x0=Math.min(x1-.05,p.x);else x1=Math.max(x0+.05,p.x);if([0,1].includes(drag.corner))y0=Math.min(y1-.05,p.y);else y1=Math.max(y0+.05,p.y);c=clampCrop({x:x0,y:y0,w:x1-x0,h:y1-y0});}paint();};view.onpointerup=()=>drag=null;view.onpointercancel=()=>drag=null;paint();
   return{apply(){const old=frames[i];crops[i]=c;frames[i]={...old,h:old.w*(b.height*c.h)/(b.width*c.w)};cropMode=false;changed();},cancel(){cropMode=false;},reset(){c={x:0,y:0,w:1,h:1};paint();}};
  }
- preset();return{canvas,preset,select(i){active=i;changed();},zoom(ratio){frames[active]=scaleFrame(frames[active],ratio);changed();},center(){const f=frames[active];f.x=(board.w-f.w)/2;f.y=(board.h-f.h)/2;changed();},cropEditor,front(){zOrder=zOrder.filter(i=>i!==active);zOrder.push(active);changed();},back(){zOrder=zOrder.filter(i=>i!==active);zOrder.unshift(active);changed();},resetCrop(){crops[active]={x:0,y:0,w:1,h:1};const b=bitmaps[active];frames[active].h=frames[active].w*b.height/b.width;changed();},exportCanvas(){const output=makeCanvas(board.w,board.h);draw(output,false);return output;},destroy(){disposed=true;bitmaps.forEach(b=>b.close());pointers.clear();gesture=null;}};
+ preset();return{canvas,preset,setFrame(values){const f=frames[active];if(Number.isFinite(values.x))f.x=values.x;if(Number.isFinite(values.y))f.y=values.y;if(Number.isFinite(values.w)){const w=Math.max(board.w*.03,Math.min(board.w*3,values.w));f.h*=w/f.w;f.w=w;}changed();},select(i){active=i;changed();},zoom(ratio){frames[active]=scaleFrame(frames[active],ratio);changed();},center(){const f=frames[active];f.x=(board.w-f.w)/2;f.y=(board.h-f.h)/2;changed();},cropEditor,front(){zOrder=zOrder.filter(i=>i!==active);zOrder.push(active);changed();},back(){zOrder=zOrder.filter(i=>i!==active);zOrder.unshift(active);changed();},resetCrop(){crops[active]={x:0,y:0,w:1,h:1};const b=bitmaps[active];frames[active].h=frames[active].w*b.height/b.width;changed();},exportCanvas(){const output=makeCanvas(board.w,board.h);draw(output,false);return output;},destroy(){disposed=true;bitmaps.forEach(b=>b.close());pointers.clear();gesture=null;}};
 }

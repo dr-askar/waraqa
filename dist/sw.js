@@ -1,5 +1,5 @@
-const CACHE='waraqa-shell-v3';
-const ASSETS=['./','./index.html','./privacy.html','./style.css','./app.js','./config.js','./compose-editor.js','./ocr-preprocess.js','./core.js','./storage.js','./drive.js','./i18n.js','./scanner.js','./ocr.js','./pdf.js','./encrypt-worker.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
+const CACHE='waraqa-shell-v4';
+const ASSETS=['./','./index.html','./privacy.html','./style.css','./app.js','./config.js','./compose-editor.js','./split-editor.js','./ocr-preprocess.js','./core.js','./storage.js','./drive.js','./i18n.js','./scanner.js','./ocr.js','./pdf.js','./encrypt-worker.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('waraqa-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

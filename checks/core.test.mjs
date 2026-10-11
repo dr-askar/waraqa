@@ -16,3 +16,6 @@ test('manual crops stay inside source and resizing preserves center and aspect r
 test('OCR boxes map from padded upscaled image into original PDF coordinates',()=>{const b=mapWordBox({x0:220,y0:120,x1:420,y1:220},{scale:2,angle:0,width:2040,height:1040,sourceWidth:1000,sourceHeight:500});assert.deepEqual(b,{x0:100,y0:50,x1:200,y1:100});});
 
 test('OCR rotation is inverted when locating words on the original page',()=>{const angle=-3*Math.PI/180,scale=1.5,t={angle,scale,width:1600,height:900,sourceWidth:1000,sourceHeight:500},x=250,y=130,dx=(x-500)*scale,dy=(y-250)*scale,px=dx*Math.cos(angle)-dy*Math.sin(angle)+800,py=dx*Math.sin(angle)+dy*Math.cos(angle)+450,b=mapWordBox({x0:px,y0:py,x1:px,y1:py},t);assert.ok(Math.abs(b.x0-x)<1e-8&&Math.abs(b.y0-y)<1e-8);});
+
+import {splitGridRects} from '../dist/core.js';
+test('mixed horizontal and vertical cuts cover each pixel once in RTL row order',()=>{const rects=splitGridRects(101,79,[.25,.7],[.3,.6]);assert.equal(rects.length,9);const pixels=new Uint8Array(101*79);for(const r of rects)for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)pixels[y*101+x]++;assert.ok(pixels.every(n=>n===1));assert.equal(rects[0].x,71);assert.equal(rects[3].y,24);assert.throws(()=>splitGridRects(100,100,[.1,.2,.3,.4,.5],[.1,.2,.3,.4,.5]));});

@@ -114,3 +114,9 @@ export async function makePdf(pages,options={}){
   const jpeg=[];for(const p of pages){const img=await image(p.blob);try{const c=makeCanvas(img.width,img.height),ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0);const blob=await toBlob(c,'image/jpeg',options.quality||.9);jpeg.push({width:c.width,height:c.height,bytes:new Uint8Array(await blob.arrayBuffer())});}finally{img.close();}}
   return new Blob([pdfBytes(jpeg,options)],{type:'application/pdf'});
 }
+
+export function splitGridRects(width,height,verticalCuts=[],horizontalCuts=[],rtl=true){
+ const xs=splitRanges(width,verticalCuts),ys=splitRanges(height,horizontalCuts);
+ if(xs.length*ys.length>25)throw Error('الحد الأقصى 25 جزءاً. احذف بعض خطوط الفصل.');
+ return ys.flatMap(y=>(rtl?[...xs].reverse():xs).map(x=>({x:x.start,y:y.start,w:x.end-x.start,h:y.end-y.start})));
+}
