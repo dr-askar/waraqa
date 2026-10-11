@@ -1,0 +1,7 @@
+<resources>
+ <string name="loading">جاري فتح ورقة…</string>
+ <string name="update_webview">حدّث Android System WebView وChrome، ثم افتح ورقة من جديد.</string>
+ <string name="load_error">يلزم اتصال بالإنترنت عند أول فتح. اضغط لإعادة المحاولة. بعد تحميل التطبيق، تبقى الميزات المحلية متاحة بدون إنترنت.</string>
+ <string name="receiving">جاري استقبال الملفات…</string>
+ <string name="share_file">مشاركة الملف</string>
+</resources>

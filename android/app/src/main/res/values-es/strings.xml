@@ -1,0 +1,7 @@
+<resources>
+ <string name="loading">Abriendo Waraqa…</string>
+ <string name="update_webview">Actualiza Android System WebView y Chrome y vuelve a abrir Waraqa.</string>
+ <string name="load_error">Conéctate a Internet en el primer inicio. Pulsa para reintentar. Después de cargar, las funciones locales están disponibles sin conexión.</string>
+ <string name="receiving">Recibiendo archivos…</string>
+ <string name="share_file">Compartir archivo</string>
+</resources>

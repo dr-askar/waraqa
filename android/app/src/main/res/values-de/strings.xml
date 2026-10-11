@@ -1,0 +1,7 @@
+<resources>
+ <string name="loading">Waraqa wird geöffnet…</string>
+ <string name="update_webview">Aktualisiere Android System WebView und Chrome und öffne Waraqa erneut.</string>
+ <string name="load_error">Verbinde dich beim ersten Start mit dem Internet. Tippe zum Wiederholen. Nach dem Laden sind lokale Funktionen offline verfügbar.</string>
+ <string name="receiving">Dateien werden empfangen…</string>
+ <string name="share_file">Datei teilen</string>
+</resources>

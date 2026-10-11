@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'dev.waraqa.android'
+ compileSdk 35
+ buildFeatures { buildConfig true }
+ defaultConfig {
+  applicationId 'dev.waraqa.android'
+  minSdk 26
+  targetSdk 35
+  versionCode 60001
+  versionName '6.0.0'
+  testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+ }
+ buildTypes { release { minifyEnabled false } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies {
+ implementation 'androidx.webkit:webkit:1.12.1'
+ implementation 'androidx.core:core:1.15.0'
+ androidTestImplementation 'androidx.test:runner:1.6.2'
+ androidTestImplementation 'androidx.test:rules:1.6.1'
+ androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+ androidTestImplementation 'androidx.test.espresso:espresso-intents:3.6.1'
+}

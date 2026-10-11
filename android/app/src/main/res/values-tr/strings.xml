@@ -1,0 +1,7 @@
+<resources>
+ <string name="loading">Waraqa açılıyor…</string>
+ <string name="update_webview">Android System WebView ve Chrome’u güncelleyip Waraqa’yı yeniden açın.</string>
+ <string name="load_error">İlk açılışta internete bağlanın. Tekrar denemek için dokunun. Yüklendikten sonra yerel özellikler çevrimdışı kullanılabilir.</string>
+ <string name="receiving">Dosyalar alınıyor…</string>
+ <string name="share_file">Dosyayı paylaş</string>
+</resources>

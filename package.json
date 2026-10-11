@@ -1,11 +1,11 @@
 {
   "name": "waraqa-web",
-  "version": "5.2.1",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test checks/*.test.mjs",
-    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/drive.js && node --check dist/sw.js && node --check dist/scanner.js && node --check dist/storage.js && node --check dist/ocr.js && node --check dist/pdf.js && node --check dist/encrypt-worker.js && node --check dist/i18n.js && node --check dist/compose-editor.js && node --check dist/ocr-preprocess.js && node --check dist/config.js && node --check dist/split-editor.js && node --check dist/ui.js && node --check dist/office.js && node --check dist/export-ui.js && node --check dist/languages.js && node --check dist/locales.js && node --check dist/share-inbox.js && node --check dist/share-inbox-runtime.js",
+    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/drive.js && node --check dist/sw.js && node --check dist/scanner.js && node --check dist/storage.js && node --check dist/ocr.js && node --check dist/pdf.js && node --check dist/encrypt-worker.js && node --check dist/i18n.js && node --check dist/compose-editor.js && node --check dist/ocr-preprocess.js && node --check dist/config.js && node --check dist/split-editor.js && node --check dist/ui.js && node --check dist/office.js && node --check dist/export-ui.js && node --check dist/languages.js && node --check dist/locales.js && node --check dist/share-inbox.js && node --check dist/share-inbox-runtime.js && node --check dist/android-bridge.js",
     "test:browser": "node checks/browser.mjs",
     "build": "node scripts/vendor.mjs",
     "test:advanced": "node checks/advanced.mjs",
@@ -13,7 +13,8 @@
     "test:ui": "node checks/ui.mjs",
     "test:formats": "node checks/formats.mjs",
     "test:folders": "node checks/folders.mjs",
-    "test:share": "node checks/share.mjs"
+    "test:share": "node checks/share.mjs",
+    "test:android-bridge": "node checks/android-bridge.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.0"
