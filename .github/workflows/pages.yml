@@ -26,6 +26,7 @@ jobs:
       - run: npm run check && npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:formats
+      - run: npm run test:share
       - run: npm run test:folders
       - run: npm run test:ui
       - run: npm run test:browser
