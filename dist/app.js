@@ -7,26 +7,27 @@ import * as PDF from './pdf.js';
 import {GOOGLE_CLIENT_ID} from './config.js';
 import {createComposeEditor} from './compose-editor.js';
 import {createSplitEditor} from './split-editor.js';
+import {icon,decorateIcons,initUI} from './ui.js';
 import {initLanguage,setLanguage} from './i18n.js';
 const $=selector=>document.querySelector(selector), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let docs=[],current=null,view='all',folder='',selected=new Set(),urls=[],working=false,installPrompt=null,stream=null,dialogCleanup=null,replaceTarget=null;
 let sessionLocked=false,settingsLockEnabled=false;
 const doc=()=>docs.find(d=>d.id===current);
 const url=blob=>{const u=URL.createObjectURL(blob);urls.push(u);return u;};
-const button=(label,fn,primary=false)=>{const b=document.createElement('button');b.className=primary?'primary':'secondary';b.textContent=label;b.onclick=fn;return b;};
+const button=(label,fn,primary=false)=>{const b=document.createElement('button');b.className=primary?'primary':'secondary';b.innerHTML=icon(/نسخ|نسخة/.test(label)?'copy':/استخراج|نص/.test(label)?'text':/حذف/.test(label)?'trash':/إلغاء|إغلاق/.test(label)?'close':/تنزيل/.test(label)?'download':/التقاط/.test(label)?'camera':'check')+'<span>'+esc(label)+'</span>';b.onclick=fn;return b;};
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
 async function run(label,fn){if(working)return;working=true;$('#busy-text').textContent=label;$('#busy').hidden=false;try{await fn();await refresh();}catch(error){console.error(error.name);toast(error.message||'تعذر إكمال العملية، حاول مرة ثانية.');}finally{working=false;$('#busy').hidden=true;}}
 async function refresh(){if(sessionLocked)return;docs=await allDocs();render();}
 async function persist(d,touch=true){const saved=await saveDoc(d,touch);docs=docs.map(x=>x.id===saved.id?saved:x);if(!docs.some(x=>x.id===saved.id))docs.push(saved);scheduleSync();return saved;}
 function closeModal(){if(sessionLocked&&$('#modal').open)return;if(dialogCleanup){dialogCleanup();dialogCleanup=null;}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}$('#modal').close();$('#modal-body').replaceChildren();$('#modal-actions').replaceChildren();}
-function modal(title,html,actions=[]){if(sessionLocked&&$('#modal').open)$('#modal').close();closeModal();$('#modal-title').textContent=title;$('#modal-body').innerHTML=html;$('#modal-actions').replaceChildren(...actions);$('#modal').showModal();}
+function modal(title,html,actions=[]){if(sessionLocked&&$('#modal').open)$('#modal').close();closeModal();$('#modal-title').textContent=title;$('#modal-body').innerHTML=html;$('#modal-actions').replaceChildren(...actions);decorateIcons($('#modal'));$('#modal').showModal();}
 function download(blob,name){const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),30000);}
 const safeName=name=>name.replace(/[\\/:*?"<>|]/g,'_').slice(0,120);
 function goHome(){current=null;selected.clear();render();}
 function render(){
   for(const u of urls)URL.revokeObjectURL(u);urls=[];
   $('#home').hidden=!!current;$('#editor').hidden=!current;
-  $('#count').textContent=docs.filter(d=>!d.trashed&&!d.deleted).length;
+  const live=docs.filter(d=>!d.trashed&&!d.deleted);$('#count').textContent=live.length;$('#document-total').textContent=live.length;$('#page-total').textContent=live.reduce((n,d)=>n+d.pages.length,0);$('#favorite-total').textContent=live.filter(d=>d.favorite).length;const list=localStorage.getItem('waraqa-library-view')==='list';$('#documents').classList.toggle('list-view',list);for(const type of ['grid','list']){const b=$('#view-'+type),active=(type==='list')===list;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
   if(current){if(!doc()){goHome();return;}renderEditor();return;}
   $('#heading').innerHTML=view==='trash'?'سلة المحذوفات<span>.</span>':view==='favorite'?'قريبين لقلبك<span>.</span>':'مستنداتك، ببساطة<span>.</span>';
@@ -36,8 +37,8 @@ function render(){
   shown.sort(sort==='name'?(a,b)=>a.name.localeCompare(b.name,'ar'):(a,b)=>b[sort]-a[sort]);
   $('#library-count').textContent=`${shown.length} مستند`;
   const folders=[...new Set(docs.filter(d=>!d.trashed&&d.folder).map(d=>d.folder))];
-  $('#folders').replaceChildren(...['',...folders].map(f=>{const b=button(f||'كل المجلدات',()=>{folder=f;render();});b.className=`chip ${f===folder?'active':''}`;return b;}));
-  $('#documents').innerHTML=shown.map(d=>`<article class="doc-card"><div class="doc-cover" data-open="${esc(d.id)}" role="button" tabindex="0" aria-label="فتح ${esc(d.name)}">${d.pages[0]?`<img src="${url(d.pages[0].blob)}" alt="معاينة أول صفحة" loading="lazy">`:'<div class="blank-doc">▤</div>'}</div><div class="doc-info"><h3>${esc(d.name)}</h3><p>${d.pages.length} صفحات · ${new Date(d.updated).toLocaleDateString('ar')} ${d.folder?'· '+esc(d.folder):''}</p><div class="doc-actions"><button data-fav="${esc(d.id)}" class="${d.favorite?'favorite':''}" aria-label="تبديل المفضلة">${d.favorite?'★':'☆'}</button><button data-open="${esc(d.id)}">فتح ←</button><button data-trash="${esc(d.id)}">${d.trashed?'استعادة':'للسلة'}</button>${d.trashed?`<button data-purge="${esc(d.id)}">حذف نهائي</button>`:''}<button data-copy="${esc(d.id)}">نسخ</button></div></div></article>`).join('');
+  $('#folders').replaceChildren(...['',...folders].map(f=>{const b=button(f||'كل المجلدات',()=>{folder=f;render();});b.className=`chip ${f===folder?'active':''}`;b.innerHTML=icon('folder')+'<span>'+esc(f||'كل المجلدات')+'</span>';return b;}));
+  $('#documents').innerHTML=shown.map(d=>`<article class="doc-card"><div class="doc-cover" data-open="${esc(d.id)}" role="button" tabindex="0" aria-label="فتح ${esc(d.name)}">${d.pages[0]?`<img src="${url(d.pages[0].blob)}" alt="معاينة أول صفحة" loading="lazy">`:`<div class="blank-doc">${icon('documents')}</div>`}<span class="doc-page-count">${d.pages.length} صفحات</span></div><div class="doc-info"><h3>${esc(d.name)}</h3><p>${new Date(d.updated).toLocaleDateString('ar')} ${d.folder?'· '+esc(d.folder):''}</p><div class="doc-actions"><button class="open-doc" data-open="${esc(d.id)}">فتح ${icon('arrow')}</button><button data-fav="${esc(d.id)}" class="icon-btn ${d.favorite?'favorite':''}" aria-label="تبديل المفضلة" aria-pressed="${!!d.favorite}">${icon('star')}</button><details class="action-menu"><summary aria-label="خيارات المستند">${icon('more')}</summary><div class="menu-panel"><button data-copy="${esc(d.id)}">${icon('copy')}<span>نسخ</span></button><button data-trash="${esc(d.id)}" class="${d.trashed?'':'danger'}">${icon(d.trashed?'restore':'trash')}<span>${d.trashed?'استعادة':'للسلة'}</span></button>${d.trashed?`<button data-purge="${esc(d.id)}" class="danger">${icon('trash')}<span>حذف نهائي</span></button>`:''}</div></details></div></div></article>`).join('');
   $('#empty').hidden=shown.length>0;
 }
 function renderEditor(){
@@ -45,7 +46,8 @@ function renderEditor(){
   $('#doc-title').textContent=d.name;$('#doc-meta').textContent=`${d.pages.length} صفحات${d.folder?' · '+d.folder:''}${d.trashed?' · موجود في سلة المحذوفات':''}`;
   $('#compose').disabled=selected.size!==2;$('#split').disabled=selected.size!==1;$('#extract').disabled=selected.size===0;
   $('#selection-label').textContent=selected.size?`تم تحديد ${selected.size} صفحة`:'حدد صفحة لتعديلها، أو صفحتين لدمجهما في صفحة واحدة.';
-  $('#pages').innerHTML=d.pages.map((p,i)=>`<article class="page-card ${selected.has(p.id)?'selected':''}"><div class="page-head"><label><input type="checkbox" data-select="${esc(p.id)}" ${selected.has(p.id)?'checked':''}>صفحة ${i+1}</label><div><button class="icon-btn" data-move="${esc(p.id)}" data-dir="-1" aria-label="نقل الصفحة للأعلى" ${i===0?'disabled':''}>↑</button><button class="icon-btn" data-move="${esc(p.id)}" data-dir="1" aria-label="نقل الصفحة للأسفل" ${i===d.pages.length-1?'disabled':''}>↓</button></div></div><img src="${url(p.blob)}" data-zoom="${esc(p.id)}" alt="صفحة ${i+1}" loading="lazy"><div class="page-tools"><button data-crop="${esc(p.id)}">قصّ</button><button data-enhance="${esc(p.id)}">تحسين</button><button data-rotate="${esc(p.id)}">↻ تدوير</button><button data-annotate="${esc(p.id)}">توقيع / قلم</button><button data-original="${esc(p.id)}">الأصل</button><button data-undo="${esc(p.id)}" ${!p.history?.length?'disabled':''}>تراجع</button><button data-redo="${esc(p.id)}" ${!p.redo?.length?'disabled':''}>إعادة</button><button data-ocr="${esc(p.id)}">${p.ocr?'النص المستخرج':'استخراج النص'}</button><button data-pagecopy="${esc(p.id)}">نسخ</button><button data-replace="${esc(p.id)}">استبدال</button><button data-remove="${esc(p.id)}">حذف</button></div></article>`).join('');
+  $('#pages').innerHTML=d.pages.map((p,i)=>`<article class="page-card ${selected.has(p.id)?'selected':''}"><div class="page-head"><label><input type="checkbox" data-select="${esc(p.id)}" ${selected.has(p.id)?'checked':''}>صفحة ${i+1}</label><div><button class="icon-btn" data-move="${esc(p.id)}" data-dir="-1" aria-label="نقل الصفحة للأعلى" ${i===0?'disabled':''}>${icon('up')}</button><button class="icon-btn" data-move="${esc(p.id)}" data-dir="1" aria-label="نقل الصفحة للأسفل" ${i===d.pages.length-1?'disabled':''}>${icon('down')}</button></div></div><img src="${url(p.blob)}" data-zoom="${esc(p.id)}" alt="صفحة ${i+1}" loading="lazy"><div class="page-tools"><button data-crop="${esc(p.id)}">${icon('crop')}<span>قصّ</span></button><button data-enhance="${esc(p.id)}">${icon('enhance')}<span>تحسين</span></button><button data-ocr="${esc(p.id)}">${icon('text')}<span>${p.ocr?'النص المستخرج':'استخراج النص'}</span></button><details class="action-menu"><summary aria-label="المزيد من أدوات الصفحة">${icon('more')}<span>المزيد</span></summary><div class="menu-panel"><button data-rotate="${esc(p.id)}">${icon('rotate')}<span>تدوير</span></button><button data-annotate="${esc(p.id)}">${icon('edit')}<span>توقيع / قلم</span></button><button data-original="${esc(p.id)}">${icon('restore')}<span>الأصل</span></button><button data-undo="${esc(p.id)}" ${!p.history?.length?'disabled':''}>${icon('undo')}<span>تراجع</span></button><button data-redo="${esc(p.id)}" ${!p.redo?.length?'disabled':''}>${icon('redo')}<span>إعادة</span></button><button data-pagecopy="${esc(p.id)}">${icon('copy')}<span>نسخ</span></button><button data-replace="${esc(p.id)}">${icon('upload')}<span>استبدال</span></button><button data-remove="${esc(p.id)}" class="danger">${icon('trash')}<span>حذف</span></button></div></details></div></article>`).join('');
+
 }
 async function importImages(files,target=current){
   if(!files.length)return;
@@ -168,13 +170,14 @@ function events(){
   for(const name of ['scan','add-camera','mobile-scan'])$('#'+name).onclick=()=>openCamera().catch(e=>toast(e.message));
   $('#files').onchange=e=>{const files=[...e.target.files];e.target.value='';importImages(files);};$('#capture-file').onchange=e=>{const files=[...e.target.files];e.target.value='';importImages(files);};$('#backup-file').onchange=e=>{const file=e.target.files[0];e.target.value='';if(file)restoreBackup(file);};
   $('#new-doc').onclick=()=>run('إنشاء مستند…',async()=>{const d=await persist(newDoc('مستند جديد'));current=d.id;selected.clear();});
+  for(const type of ['grid','list'])$('#view-'+type).onclick=()=>{localStorage.setItem('waraqa-library-view',type);render();};
   $('#search').oninput=render;$('#sort').onchange=render;$('#back').onclick=goHome;$('#rename').onclick=editName;$('#compose').onclick=()=>composeDialog().catch(e=>toast(e.message));$('#split').onclick=splitDialog;$('#extract').onclick=extractPages;$('#export').onclick=exportDialog;
   $('#select-all').onclick=()=>{selected=selected.size===doc().pages.length?new Set():new Set(doc().pages.map(p=>p.id));render();};
   for(const name of ['settings-open','mobile-settings'])$('#'+name).onclick=settings;
   $('#theme').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('waraqa-dark',String(document.body.classList.contains('dark')));};
   $('#modal-close').onclick=closeModal;$('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
   $('#documents').onclick=e=>{const target=e.target.closest('button,[data-open]');if(!target)return;if(target.dataset.open){current=target.dataset.open;selected.clear();render();}else if(target.dataset.fav){const d=docs.find(x=>x.id===target.dataset.fav);run('حفظ…',()=>persist({...d,favorite:!d.favorite}));}else if(target.dataset.trash){const d=docs.find(x=>x.id===target.dataset.trash);run('حفظ…',()=>persist({...d,trashed:!d.trashed}));}};
-  $('#documents').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')e.target.closest('[data-open]')?.click();};
+  $('#documents').onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-open][role=button]')){e.preventDefault();e.target.click();}};
   $('#pages').onchange=e=>{if(e.target.dataset.select){const p=e.target.dataset.select;if(e.target.checked)selected.add(p);else selected.delete(p);render();}};
   $('#pages').onclick=e=>{const t=e.target.closest('button,img');if(!t)return;const d=doc();if(t.dataset.zoom){const p=d.pages.find(x=>x.id===t.dataset.zoom);modal('معاينة الصفحة',`<img class="zoom-image" src="${url(p.blob)}" alt="الصفحة بالحجم الكامل">`,[button('إغلاق',closeModal)]);}
     else if(t.dataset.crop)cropDialog(t.dataset.crop).catch(e=>toast(e.message));else if(t.dataset.enhance)enhanceDialog(t.dataset.enhance);else if(t.dataset.annotate)annotateDialog(t.dataset.annotate).catch(e=>toast(e.message));
@@ -188,6 +191,7 @@ function events(){
 }
 function network(){$('#offline').textContent=navigator.onLine?'محلي وآمن':'بدون إنترنت';}
 async function init(){try{await openDb();const lock=await lockState();settingsLockEnabled=lock.enabled;if(lock.locked){sessionLocked=true;showUnlock();return;}document.body.classList.toggle('dark',localStorage.getItem('waraqa-dark')==='true');events();extendedEvents();network();await refresh();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>toast('تعذر تفعيل العمل بدون إنترنت في هذا المتصفح.'));}catch(e){toast(e.message);$('#empty').innerHTML='<h3>تعذر فتح التخزين المحلي</h3><p>جرّب Chrome بدون التصفح الخفي، واسمح بتخزين بيانات الموقع.</p>';}}
+initUI();
 init();
 
 async function ocrDialog(pageId){

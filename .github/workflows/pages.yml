@@ -25,6 +25,7 @@ jobs:
           WARAQA_GOOGLE_CLIENT_ID: ${{ vars.WARAQA_GOOGLE_CLIENT_ID }}
       - run: npm run check && npm test
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:ui
       - run: npm run test:browser
       - run: npm run test:advanced
       - run: npm run test:ocr
