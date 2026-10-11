@@ -35,7 +35,14 @@
           "accept": [
             "image/*",
             "application/pdf",
-            ".pdf"
+            ".pdf",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".gif",
+            ".bmp",
+            ".avif"
           ]
         }
       ]
