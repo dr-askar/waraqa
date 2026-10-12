@@ -7,7 +7,14 @@ export function deskewAngle(canvas,details=false){
  const baseline=score(0);let best={angle:0,value:baseline};for(let angle=-6;angle<=6;angle+=.5){const value=score(angle);if(value>best.value)best={angle,value};}
  const angle=best.value>baseline*1.05?best.angle*Math.PI/180:0;return details?{coverage,angle,baseline,best}:angle;
 }
-export function mapWordBox(bbox,transform){const {scale,angle,width,height,sourceWidth,sourceHeight}=transform,c=Math.cos(angle),s=Math.sin(angle);const points=[[bbox.x0,bbox.y0],[bbox.x1,bbox.y0],[bbox.x1,bbox.y1],[bbox.x0,bbox.y1]].map(([x,y])=>({x:((x-width/2)*c+(y-height/2)*s)/scale+sourceWidth/2,y:(-(x-width/2)*s+(y-height/2)*c)/scale+sourceHeight/2}));return{x0:Math.max(0,Math.min(...points.map(p=>p.x))),y0:Math.max(0,Math.min(...points.map(p=>p.y))),x1:Math.min(sourceWidth,Math.max(...points.map(p=>p.x))),y1:Math.min(sourceHeight,Math.max(...points.map(p=>p.y)))};}
+export async function rotatePrepared(prepared,degrees){
+ const angle=((Number(degrees)%360)+360)%360;if(!angle)return prepared;
+ const bitmap=await image(prepared.blob),swap=angle===90||angle===270,canvas=makeCanvas(swap?bitmap.height:bitmap.width,swap?bitmap.width:bitmap.height),ctx=canvas.getContext('2d');
+ try{ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(angle*Math.PI/180);ctx.drawImage(bitmap,-bitmap.width/2,-bitmap.height/2);return{blob:await toBlob(canvas,'image/png'),transform:{...prepared.transform,width:canvas.width,height:canvas.height,rotationDegrees:angle,baseTransform:prepared.transform}};}finally{bitmap.close();}
+}
+export function mapWordBox(bbox,transform){
+ if(transform.baseTransform){const a=transform.rotationDegrees*Math.PI/180,c=Math.cos(a),s=Math.sin(a),base=transform.baseTransform;const points=[[bbox.x0,bbox.y0],[bbox.x1,bbox.y0],[bbox.x1,bbox.y1],[bbox.x0,bbox.y1]].map(([x,y])=>({x:(x-transform.width/2)*c+(y-transform.height/2)*s+base.width/2,y:-(x-transform.width/2)*s+(y-transform.height/2)*c+base.height/2}));return mapWordBox({x0:Math.min(...points.map(p=>p.x)),y0:Math.min(...points.map(p=>p.y)),x1:Math.max(...points.map(p=>p.x)),y1:Math.max(...points.map(p=>p.y))},base);}
+const {scale,angle,width,height,sourceWidth,sourceHeight}=transform,c=Math.cos(angle),s=Math.sin(angle);const points=[[bbox.x0,bbox.y0],[bbox.x1,bbox.y0],[bbox.x1,bbox.y1],[bbox.x0,bbox.y1]].map(([x,y])=>({x:((x-width/2)*c+(y-height/2)*s)/scale+sourceWidth/2,y:(-(x-width/2)*s+(y-height/2)*c)/scale+sourceHeight/2}));return{x0:Math.max(0,Math.min(...points.map(p=>p.x))),y0:Math.max(0,Math.min(...points.map(p=>p.y))),x1:Math.min(sourceWidth,Math.max(...points.map(p=>p.x))),y1:Math.min(sourceHeight,Math.max(...points.map(p=>p.y)))};}
 export async function prepareOcr(blob,enabled=true){
  const bitmap=await image(blob),sourceWidth=bitmap.width,sourceHeight=bitmap.height;
  if(!enabled){bitmap.close();return{blob,transform:{scale:1,angle:0,width:sourceWidth,height:sourceHeight,sourceWidth,sourceHeight}};}

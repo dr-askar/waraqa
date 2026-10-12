@@ -132,3 +132,9 @@ npm run test:android-bridge
 Document and page action menus now use the browser top layer, with viewport-aware placement, keyboard navigation and an elevated-card fallback for older browsers. The library has larger touch targets, counted folder tabs, clearer previews and title-to-open navigation.
 
 The scanner combines RGB-channel edges with grayscale candidates and RGB boundary evidence. A wider edge-refinement search distinguishes dark paper from its shadow. Browser regression fixtures cover white, off-white, pink, dark and similarly bright but differently colored paper/backgrounds, and reject a blank frame. Detection still needs a visible physical boundary; users can review and adjust the four corners before cropping.
+
+### Progress visibility and rotated OCR (2026-10-12)
+
+Busy processing now opens a modal dialog above the active camera or OCR dialog, with a determinate OCR progress bar and cancellable recognition. Escape and the existing native Back callback cancel recognition without discarding the underlying editor. Camera capture and other non-cancellable work keep their progress visible.
+
+OCR compares all four quarter-turn orientations by default using the selected language model, confidence and word geometry. An explicit orientation can skip this comparison. Rotation happens only on a processing copy; original image blobs and original-image OCR word coordinates are retained. The automatic mode performs additional OCR passes, so it takes longer than a fixed orientation. The regression suite uses real Arabic/English OCR on each rotation, checks word coordinate transforms, and exercises top-layer progress and cancellation in the actual OCR and camera interfaces.
