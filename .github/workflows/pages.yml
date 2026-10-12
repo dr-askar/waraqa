@@ -30,6 +30,7 @@ jobs:
       - run: npm run test:share
       - run: npm run test:folders
       - run: npm run test:ui
+      - run: npm run test:phase-one
       - run: npm run test:browser
       - run: npm run test:advanced
       - run: npm run test:ocr

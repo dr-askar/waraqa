@@ -12,14 +12,14 @@ export async function saveDoc(doc,touch=true){
 }
 export async function deleteLocal(docId){return new Promise((resolve,reject)=>{const tx=db.transaction('documents','readwrite');tx.objectStore('documents').delete(docId);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 export function newDoc(name){return{id:id(),name:name||`مستند ${new Date().toLocaleDateString('ar')}`,created:Date.now(),updated:Date.now(),pages:[],folder:'',favorite:false,trashed:false,rev:id(),ancestors:[]};}
-export function newPage(blob,width,height){return{id:id(),blob,original:blob,width,height,history:[],redo:[],ocr:null,redacted:false};}
+export function newPage(blob,width,height){return{id:id(),imageRevision:id(),blob,original:blob,width,height,history:[],redo:[],ocr:null,redacted:false};}
 export async function encodeDoc(doc,includeHistory=false){
   const pages=[];for(const page of doc.pages){pages.push({...page,blob:await blobData(page.blob),original:page.original===page.blob?null:await blobData(page.original),history:includeHistory?await historyJson(page.history):[],redo:includeHistory?await historyJson(page.redo):[]});}
   return{...doc,pages,schema:1};
 }
 export async function decodeDoc(value){
   if(value.schema!==1||typeof value.id!=='string'||typeof value.name!=='string'||typeof value.rev!=='string'||!Array.isArray(value.pages)||value.pages.length>80)throw Error('نسخة المستند غير مدعومة');
-  const pages=value.pages.map(p=>{const blob=dataBlob(p.blob);return{id:typeof p.id==='string'?p.id:id(),blob,original:p.original?dataBlob(p.original):blob,width:p.width,height:p.height,ocr:validateOcr(p.ocr),redacted:!!p.redacted,sourceKind:p.sourceKind||'import',history:historyFromJson(p.history),redo:historyFromJson(p.redo)};});
+  const pages=value.pages.map(p=>{const blob=dataBlob(p.blob);return{id:typeof p.id==='string'?p.id:id(),blob,imageRevision:typeof p.imageRevision==='string'?p.imageRevision.slice(0,100):undefined,original:p.original?dataBlob(p.original):blob,width:p.width,height:p.height,ocr:validateOcr(p.ocr),redacted:!!p.redacted,sourceKind:p.sourceKind||'import',history:historyFromJson(p.history),redo:historyFromJson(p.redo)};});
   return{shareReceipts:Array.isArray(value.shareReceipts)?value.shareReceipts.filter(x=>typeof x==='string'&&x.length<=100).slice(-100):[],id:value.id,name:value.name.slice(0,150),created:Number(value.created)||Date.now(),updated:Number(value.updated)||Date.now(),pages,folder:String(value.folder||'').slice(0,100),favorite:!!value.favorite,trashed:!!value.trashed,deleted:!!value.deleted,tags:Array.isArray(value.tags)?value.tags.filter(t=>typeof t==='string'):[],rev:value.rev,conflictOf:typeof value.conflictOf==='string'?value.conflictOf:undefined,ancestors:Array.isArray(value.ancestors)?value.ancestors.filter(x=>typeof x==='string'):[]};
 }
 export function syncHeads(snapshots){
@@ -46,13 +46,13 @@ export async function configureLock(password){
   const salt=password?bytes64(crypto.getRandomValues(new Uint8Array(16))):null;
   const newKey=password?await derive(password,salt):null;
   const config=password?{salt,check:await encryptValue('waraqa-key-check',newKey)}:null;
-  const preferences=[];for(const key of ['signature','folders']){const value=await getUserPreference(key);preferences.push({key:'user-'+key,value:newKey&&value!==null?{sealed:true,...await encryptValue(value,newKey)}:value});}
+  const preferences=[];for(const key of ['signature','folders','processing-jobs']){const value=await getUserPreference(key);preferences.push({key:'user-'+key,value:newKey&&value!==null?{sealed:true,...await encryptValue(value,newKey)}:value});}
   const records=[];for(const document of documents)records.push(newKey?await seal(document,newKey):document);
   await new Promise((resolve,reject)=>{const tx=db.transaction(['documents','meta'],'readwrite');const store=tx.objectStore('documents');store.clear();records.forEach(record=>store.put(record));tx.objectStore('meta').put({key:'lock',value:config});preferences.forEach(record=>tx.objectStore('meta').put(record));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
   activeKey=newKey;lockConfig=config;
 }
 
-function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),confidence:Number.isFinite(value.confidence)?value.confidence:undefined,quality:value.quality==='fast'?'fast':'best',deskewDegrees:Number.isFinite(value.deskewDegrees)?value.deskewDegrees:0,edited:!!value.edited,rotationDegrees:[0,90,180,270].includes(value.rotationDegrees)?value.rotationDegrees:0,textKind:['handwritten','mixed'].includes(value.textKind)?value.textKind:'printed',experimentalHandwriting:!!value.experimentalHandwriting,languageDetection:value.languageDetection&&Array.isArray(value.languageDetection.languages)?{languages:value.languageDetection.languages.filter(code=>OCR_LANGUAGES.some(l=>l.code===code)).slice(0,3),uncertain:!!value.languageDetection.uncertain,limited:!!value.languageDetection.limited,script:typeof value.languageDetection.script==='string'?value.languageDetection.script.slice(0,30):null}:null};}
+function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),confidence:Number.isFinite(value.confidence)?value.confidence:undefined,quality:value.quality==='fast'?'fast':'best',deskewDegrees:Number.isFinite(value.deskewDegrees)?value.deskewDegrees:0,edited:!!value.edited,rotationDegrees:[0,90,180,270].includes(value.rotationDegrees)?value.rotationDegrees:0,textKind:['handwritten','mixed'].includes(value.textKind)?value.textKind:'printed',experimentalHandwriting:!!value.experimentalHandwriting,processingJobId:typeof value.processingJobId==='string'?value.processingJobId.slice(0,100):undefined,languageDetection:value.languageDetection&&Array.isArray(value.languageDetection.languages)?{languages:value.languageDetection.languages.filter(code=>OCR_LANGUAGES.some(l=>l.code===code)).slice(0,3),uncertain:!!value.languageDetection.uncertain,limited:!!value.languageDetection.limited,script:typeof value.languageDetection.script==='string'?value.languageDetection.script.slice(0,30):null}:null};}
 
 async function historyJson(states=[]){const out=[];for(const state of states.slice(-3))out.push({...state,blob:await blobData(state.blob)});return out;}
 function historyFromJson(states){return Array.isArray(states)?states.slice(-3).map(state=>({...state,blob:dataBlob(state.blob),ocr:validateOcr(state.ocr)})):[];}
@@ -68,4 +68,20 @@ export async function saveFolderOrganization(documents,folders){
  const records=[];for(const d of updated)records.push(activeKey?await seal(d,activeKey):d);
  const value=activeKey?{sealed:true,...await encryptValue(folders,activeKey)}:folders;
  await new Promise((resolve,reject)=>{const tx=db.transaction(['documents','meta'],'readwrite');records.forEach(d=>tx.objectStore('documents').put(d));tx.objectStore('meta').put({key:'user-folders',value});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+}
+
+export async function getDoc(docId){const record=await new Promise((resolve,reject)=>{const req=db.transaction('documents').objectStore('documents').get(docId);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});return record?unseal(record):null;}
+// Compare the exact stored record inside the write transaction so asynchronous
+// OCR cannot replace a newer rename, image edit, text correction or encryption.
+export async function mutateDoc(docId,change,allowed=()=>true){
+ for(let attempt=0;attempt<8;attempt++){
+  if(!allowed()){const error=Error('المعالجة مؤجلة');error.name='ProcessingPaused';throw error;}
+  if(lockConfig&&!activeKey)throw Error('المستندات مقفلة');
+  const raw=await new Promise((resolve,reject)=>{const req=db.transaction('documents').objectStore('documents').get(docId);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});if(!raw)return null;
+  const original=await unseal(raw),changed=await change(original);if(!changed)return null;
+  const updated={...changed,rev:id(),ancestors:[...(original.ancestors||[]),original.rev],updated:Date.now()};
+  if(lockConfig&&!activeKey)throw Error('المستندات مقفلة');const record=activeKey?await seal(updated,activeKey):updated;
+  const committed=await new Promise((resolve,reject)=>{const tx=db.transaction('documents','readwrite'),store=tx.objectStore('documents'),request=store.get(docId);let accepted=false;request.onsuccess=()=>{const current=request.result,same=raw.sealed?current?.sealed&&current.iv===raw.iv&&current.cipher===raw.cipher:!current?.sealed&&current?.rev===raw.rev;if(same&&allowed()){accepted=true;store.put(record);}};tx.oncomplete=()=>resolve(accepted);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});if(committed)return updated;
+ }
+ throw Error('تغيّر المستند أثناء الحفظ؛ أعد المحاولة');
 }
