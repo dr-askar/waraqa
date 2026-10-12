@@ -126,3 +126,9 @@ npm run test:android-bridge
 حدد ANDROID_HOME أو android/local.properties. اختبارات الجهاز تفحص تسجيل المشاركة، استقبال صور متعددة وPDF عبر مزوّد ملفات خارجي، قراءة البايتات من الجسر، منع قراءة ملف غير مصرح به، استمرار الاستقبال بعد إعادة الفتح، والتصدير عبر المشاركة ومنتقي التخزين. GitHub Actions يشغّلها على محاكي Android 35 قبل نشر الموقع.
 
 نسخة التنزيل موقّعة بمفتاح إصدار محفوظ خارج المستودع. يجب حفظ نسخة آمنة من المفتاح وكلمة مروره لإصدار تحديثات متوافقة؛ لا تضفهما إلى Git. قبل النشر استخدم zipalign ثم apksigner، وحدّث dist/android/SHA256SUMS. التوقيع وشهادة الإصدار العامة يمكن فحصهما بـ apksigner verify --verbose --print-certs. البناء الافتراضي ينتج APK غير موقّع؛ لا يعيد CI توقيع ملف التنزيل.
+
+### Library and colored-paper refinement (2026-10-12)
+
+Document and page action menus now use the browser top layer, with viewport-aware placement, keyboard navigation and an elevated-card fallback for older browsers. The library has larger touch targets, counted folder tabs, clearer previews and title-to-open navigation.
+
+The scanner combines RGB-channel edges with grayscale candidates and RGB boundary evidence. A wider edge-refinement search distinguishes dark paper from its shadow. Browser regression fixtures cover white, off-white, pink, dark and similarly bright but differently colored paper/backgrounds, and reject a blank frame. Detection still needs a visible physical boundary; users can review and adjust the four corners before cropping.

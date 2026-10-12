@@ -37,7 +37,27 @@ export const icon=name=>`<svg class="ui-icon" viewBox="0 0 24 24" fill="none" st
 export function decorateIcons(root=document){for(const element of root.querySelectorAll('[data-icon]'))if(!element.querySelector('.ui-icon'))element.insertAdjacentHTML('afterbegin',icon(element.dataset.icon));}
 export function initUI(){
  decorateIcons();
- document.addEventListener('click',event=>{for(const menu of document.querySelectorAll('.action-menu[open]'))if(!menu.contains(event.target)||event.target.closest('button'))menu.open=false;const quick=event.target.closest('[data-trigger]');if(quick)document.getElementById(quick.dataset.trigger)?.click();});
- document.addEventListener('toggle',event=>{if(event.target.matches?.('.action-menu[open]')){for(const menu of document.querySelectorAll('.action-menu[open]'))if(menu!==event.target)menu.open=false;const menu=event.target;menu.classList.remove('menu-up');requestAnimationFrame(()=>{if(menu.open){const panel=menu.querySelector('.menu-panel'),limit=innerHeight-(innerWidth<=700?100:15);if(panel.getBoundingClientRect().bottom>limit)menu.classList.add('menu-up');}});}},true);
- document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.querySelector('.action-menu[open]');if(menu){event.preventDefault();menu.open=false;menu.querySelector('summary').focus();}}});
+ const close=menu=>{menu.open=false;const panel=menu.querySelector('.menu-panel');if(panel?.hidePopover&&panel.matches(':popover-open'))panel.hidePopover();menu.closest('article')?.classList.remove('menu-active');menu.querySelector('summary')?.setAttribute('aria-expanded','false');};
+ const position=menu=>{
+  const panel=menu.querySelector('.menu-panel'),anchor=menu.querySelector('summary').getBoundingClientRect(),viewport=window.visualViewport;
+  const left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0,width=viewport?.width||innerWidth,height=viewport?.height||innerHeight;
+  const bottom=top+height-(innerWidth<=700?94:12),box=panel.getBoundingClientRect();
+  panel.style.left=Math.max(left+12,Math.min(anchor.right-box.width,left+width-box.width-12))+'px';
+  panel.style.top=Math.max(top+12,anchor.bottom+box.height+8<=bottom?anchor.bottom+8:anchor.top-box.height-8)+'px';
+  panel.style.maxHeight=Math.max(80,bottom-top-24)+'px';
+ };
+ document.addEventListener('click',event=>{for(const menu of document.querySelectorAll('.action-menu[open]'))if(!menu.contains(event.target)||event.target.closest('button'))close(menu);const quick=event.target.closest('[data-trigger]');if(quick)document.getElementById(quick.dataset.trigger)?.click();});
+ document.addEventListener('toggle',event=>{
+  const menu=event.target;if(!menu.matches?.('.action-menu'))return;
+  if(!menu.open){close(menu);return;}
+  for(const other of document.querySelectorAll('.action-menu[open]'))if(other!==menu)close(other);
+  menu.closest('article')?.classList.add('menu-active');menu.querySelector('summary').setAttribute('aria-expanded','true');
+  const panel=menu.querySelector('.menu-panel');menu.classList.remove('menu-up');
+  if(panel.showPopover){panel.setAttribute('popover','manual');panel.classList.add('floating-menu');panel.showPopover();position(menu);}
+  else requestAnimationFrame(()=>{if(menu.open&&panel.getBoundingClientRect().bottom>innerHeight-100)menu.classList.add('menu-up');});
+ },true);
+ const dismiss=()=>{for(const menu of document.querySelectorAll('.action-menu[open]'))close(menu);};
+ window.addEventListener('resize',dismiss);window.visualViewport?.addEventListener('resize',dismiss);
+ document.addEventListener('scroll',event=>{if(!event.target.closest?.('.menu-panel'))for(const menu of document.querySelectorAll('.action-menu[open]'))if(menu.querySelector('.floating-menu'))position(menu);},true);
+ document.addEventListener('keydown',event=>{const menu=document.querySelector('.action-menu[open]');if(!menu)return;if(event.key==='Escape'){event.preventDefault();close(menu);menu.querySelector('summary').focus();}else if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const items=[...menu.querySelectorAll('button:not(:disabled)')],index=items.indexOf(document.activeElement);items[event.key==='Home'?0:event.key==='End'?items.length-1:event.key==='ArrowDown'?(index+1)%items.length:(index-1+items.length)%items.length]?.focus();}});
 }
