@@ -34,6 +34,7 @@ jobs:
       - run: npm run test:advanced
       - run: npm run test:ocr
       - run: npm run test:directions
+      - run: npm run test:auto-ocr
       - name: Package validated site
         uses: actions/upload-pages-artifact@v3
         with:

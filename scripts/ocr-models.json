@@ -130,5 +130,9 @@
         "best": "f888d4038348a0c3d25151e7f452bda0d74ca275b18cab146798bcbb94084fff"
       }
     }
-  ]
+  ],
+  "osd": {
+    "commit": "ced78752cc61322fb554c280d13360b35b8684e4",
+    "sha256": "e19f2ae860792fdf372cf48d8ce70ae5da3c4052962fe22e9de1f680c374bb0e"
+  }
 }

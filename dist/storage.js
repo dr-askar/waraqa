@@ -1,3 +1,4 @@
+import {OCR_LANGUAGES} from './languages.js';
 import {id,blobData,dataBlob} from './core.js';
 let db;
 export function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('waraqa',2);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('documents'))req.result.createObjectStore('documents',{keyPath:'id'});if(!req.result.objectStoreNames.contains('meta'))req.result.createObjectStore('meta',{keyPath:'key'});};req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>reject(Error('تعذر فتح التخزين المحلي. استخدم متصفح Chrome بدون التصفح الخفي.'));});}
@@ -51,7 +52,7 @@ export async function configureLock(password){
   activeKey=newKey;lockConfig=config;
 }
 
-function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),confidence:Number.isFinite(value.confidence)?value.confidence:undefined,quality:value.quality==='fast'?'fast':'best',deskewDegrees:Number.isFinite(value.deskewDegrees)?value.deskewDegrees:0,edited:!!value.edited};}
+function validateOcr(value){if(!value||typeof value.text!=='string')return null;return{text:value.text.slice(0,500000),words:Array.isArray(value.words)?value.words.slice(0,10000).filter(w=>typeof w.text==='string'&&w.bbox&&Object.values(w.bbox).every(Number.isFinite)):[],language:String(value.language||'ara+eng'),confidence:Number.isFinite(value.confidence)?value.confidence:undefined,quality:value.quality==='fast'?'fast':'best',deskewDegrees:Number.isFinite(value.deskewDegrees)?value.deskewDegrees:0,edited:!!value.edited,rotationDegrees:[0,90,180,270].includes(value.rotationDegrees)?value.rotationDegrees:0,textKind:['handwritten','mixed'].includes(value.textKind)?value.textKind:'printed',experimentalHandwriting:!!value.experimentalHandwriting,languageDetection:value.languageDetection&&Array.isArray(value.languageDetection.languages)?{languages:value.languageDetection.languages.filter(code=>OCR_LANGUAGES.some(l=>l.code===code)).slice(0,3),uncertain:!!value.languageDetection.uncertain,limited:!!value.languageDetection.limited,script:typeof value.languageDetection.script==='string'?value.languageDetection.script.slice(0,30):null}:null};}
 
 async function historyJson(states=[]){const out=[];for(const state of states.slice(-3))out.push({...state,blob:await blobData(state.blob)});return out;}
 function historyFromJson(states){return Array.isArray(states)?states.slice(-3).map(state=>({...state,blob:dataBlob(state.blob),ocr:validateOcr(state.ocr)})):[];}
