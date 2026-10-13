@@ -8,7 +8,7 @@ const server=createServer(async(req,res)=>{try{if(req.url==='/legacy.html'){res.
 await new Promise(resolve=>server.listen(4173,'127.0.0.1',resolve));
 const browser=await chromium.launch({...(process.env.BROWSER_EXECUTABLE_PATH?{executablePath:process.env.BROWSER_EXECUTABLE_PATH}:{}),headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 try{
- const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,acceptDownloads:true}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4173');await page.waitForSelector('#empty h3');
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,acceptDownloads:true}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4173');await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForSelector('#empty h3');
  const detection=await page.evaluate(async()=>{
   const scanner=await import('./scanner.js');const results=[];
   for(const variant of [0,1,2,3,4,5]){

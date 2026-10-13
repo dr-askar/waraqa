@@ -9,7 +9,7 @@ await new Promise(resolve=>server.listen(4173,'127.0.0.1',resolve));
 const browser=await chromium.launch({...(process.env.BROWSER_EXECUTABLE_PATH?{executablePath:process.env.BROWSER_EXECUTABLE_PATH}:{}),headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
 try {
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,acceptDownloads:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:4173');await page.waitForFunction(()=>document.querySelector('#empty h3')?.textContent.includes('أول مستند'));
+ await page.goto('http://127.0.0.1:4173');await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#empty h3')?.textContent.includes('أول مستند'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Mobile overflow');
  await page.screenshot({path:path.resolve(import.meta.dirname,'mobile-home.png'),fullPage:true});
  const images=await page.evaluate(()=>{return ['#e44','#49a'].map((color,index)=>{const c=document.createElement('canvas');c.width=index?600:400;c.height=index?400:600;const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle=color;ctx.fillRect(30,30,c.width-60,c.height-60);ctx.fillStyle='white';ctx.font='40px Arial';ctx.fillText('PAGE '+(index+1),60,100);return c.toDataURL('image/png').split(',')[1];});});
