@@ -641,14 +641,13 @@ export function createWorkspaceTools({
   }
   async function bookOrigins(id, pageId) {
     context = null;
-    const d = await getDoc(id),
-      source = await getDoc(d?.book?.sourceDocumentId);
+    const d=await getDoc(id),link=d?.pages.find(p=>p.bookSource&&(!pageId||p.bookSource.pageId===pageId))?.bookSource,sourceId=d?.book?.sourceDocumentId||link?.documentId;
+    if(!sourceId)return toast('لا يوجد أصل مرتبط');
+    const source=await getDoc(sourceId);
     if (!source || source.deleted || source.trashed)
       return toast("الصور الأصلية غير متاحة؛ النسخة الجاهزة ما زالت محفوظة");
-    const groups = d.book.groups.filter(
-        (g) => !pageId || g.sourcePageId === pageId,
-      ),
-      urls = [];
+    const groups=(d.book?d.book.groups:[{sourcePageId:link.pageId}]).filter(g=>!pageId||g.sourcePageId===pageId),urls=[];
+    if(!groups.some(g=>source.pages.some(p=>p.id===g.sourcePageId)))return toast('الصورة الأصلية غير متاحة؛ الصفحة الجاهزة ما زالت محفوظة');
     modal(
       "صور الكتاب الأصلية",
       `<p class="hint">الأصول محفوظة في مستند مستقل عن الصفحات الجاهزة.</p><div id="book-original-list"></div>`,
@@ -672,7 +671,7 @@ export function createWorkspaceTools({
       image.className = "quality-preview";
       image.alt = t("صورة أصلية");
       urls.push(image.src);
-      article.append(image, edit);
+      article.append(image);if(d.book)article.append(edit);
       $("#book-original-list").append(article);
     }
     cleanup(() => urls.forEach(URL.revokeObjectURL));
