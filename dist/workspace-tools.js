@@ -1,3 +1,4 @@
+import {openRepairEditor} from './repair-editor.js';
 import { openBookWorkflow, editSavedBook } from "./book-workflow.js";
 import { getDoc } from "./storage.js";
 import { createComposeEditor } from "./compose-editor.js";
@@ -970,42 +971,8 @@ export function createWorkspaceTools({
       }
     };
   }
-  function repair(d) {
-    modal(
-      "إصلاح الصورة",
-      `<p class="hint">تعبئة مستطيل بلون محيطه، مناسبة لخلفيات بسيطة. لا تستعيد تفاصيل محذوفة ولا تمثل طمساً آمناً.</p><label>اختر صفحة<select id="repair-page">${pageOptions(d)}</select></label><div class="form-row">${[
-        ["x", "المكان الأفقي (%)", 20],
-        ["y", "المكان العمودي (%)", 20],
-        ["w", "العرض (%)", 10],
-        ["h", "الارتفاع (%)", 10],
-      ]
-        .map(
-          ([key, label, value]) =>
-            `<label>${label}<input id="repair-${key}" type="number" min="0" max="100" value="${value}"></label>`,
-        )
-        .join("")}</div>`,
-      [
-        button("معاينة", async () => {
-          const page = d.pages[Number($("#repair-page").value)],
-            rect = {
-              x: Math.round((Number($("#repair-x").value) / 100) * page.width),
-              y: Math.round((Number($("#repair-y").value) / 100) * page.height),
-              w: Math.round((Number($("#repair-w").value) / 100) * page.width),
-              h: Math.round((Number($("#repair-h").value) / 100) * page.height),
-            };
-          try {
-            await guardedPreview(
-              () => Imaging.repairImage(page.blob, rect),
-              "إصلاح الصورة",
-              d.id,
-            );
-          } catch (e) {
-            toast(e.message);
-          }
-        }),
-        button("إلغاء", close),
-      ],
-    );
+  async function repair(d) {
+    const epoch=getEpoch();try {await openRepairEditor(d.pages[0],{valid:()=>isOpen()&&getEpoch()===epoch,modal,button,close,cleanup,toast,preview:canvas=>guardedPreview(()=>Promise.resolve(canvas),'إزالة بقعة / عنصر',d.id)});}catch(e){toast(e.message);}
   }
   async function editIdentity(id, pageIds) {
     const source = getDocuments().find(
