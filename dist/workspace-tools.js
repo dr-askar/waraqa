@@ -1,3 +1,5 @@
+import { openBookWorkflow, editSavedBook } from "./book-workflow.js";
+import { getDoc } from "./storage.js";
 import { createComposeEditor } from "./compose-editor.js";
 import { stopLocal } from "./local-assistant.js";
 import * as Core from "./core.js";
@@ -31,6 +33,7 @@ export function createWorkspaceTools({
   close,
   run,
   append,
+  onBookSaved,
   download,
   toast,
   cleanup: onCleanup,
@@ -103,13 +106,7 @@ export function createWorkspaceTools({
     export: "تحويل الصيغ",
     compress: "ضغط PDF",
   };
-  const singles = new Set([
-    "book",
-    "stamp",
-    "passport",
-    "cleanup",
-    "signature",
-  ]);
+  const singles = new Set(["stamp", "passport", "cleanup", "signature"]);
   async function choose(tool) {
     context = null;
     if (tool === "scan") {
@@ -165,7 +162,8 @@ export function createWorkspaceTools({
         (d.folder || t("المكتبة"));
       text.append(name, count);
       b.append(text);
-      b.onclick = () => pickPages(tool, d);
+      b.onclick = () =>
+        tool === "book" && d.book ? editBook(d.id) : pickPages(tool, d);
       root.append(b);
     }
     const search = () => {
@@ -185,13 +183,15 @@ export function createWorkspaceTools({
     context = null;
     const single = singles.has(tool),
       limit =
-        tool === "id"
-          ? 2
-          : single
-            ? 1
-            : ["mega", "collage"].includes(tool)
-              ? 12
-              : Infinity,
+        tool === "book"
+          ? 40
+          : tool === "id"
+            ? 2
+            : single
+              ? 1
+              : ["mega", "collage"].includes(tool)
+                ? 12
+                : Infinity,
       min = ["id", "mega", "collage"].includes(tool) ? 2 : 1;
     const chosen = new Set(initial);
     modal(
@@ -309,7 +309,7 @@ export function createWorkspaceTools({
     }
     if (tool === "id") await identity(d);
     else if (tool === "collage") await identity(d, true);
-    else if (tool === "book") book(d);
+    else if (tool === "book") await book(d);
     else if (tool === "stamp") stamp(d);
     else if (tool === "passport") passport(d);
     else if (tool === "mega") mega(d);
@@ -356,7 +356,7 @@ export function createWorkspaceTools({
           <button id="identity-smaller" class="secondary" aria-label="تصغير الوجه">−</button><button id="identity-larger" class="secondary" aria-label="تكبير الوجه">+</button>
         </div>
         <div class="identity-toolbar"><button id="identity-crop" class="secondary">${multi ? "قص الصورة" : "قص الوجه"}</button><button id="identity-rotate" class="secondary">تدوير 90°</button><button id="identity-equal" class="secondary">توحيد الحجم</button><button id="identity-center" class="secondary">${multi ? "توسيط الصورة" : "توسيط الوجه"}</button></div>
-        <details class="identity-advanced"><summary>خيارات إضافية</summary>${multi?`<label>عدد الأعمدة<select id="collage-columns"><option value="0">تلقائي</option>${d.pages.map((p,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select></label>`:''}<label>الهوامش والتباعد (مم)<input id="identity-margin" type="range" min="0" max="20" value="6"><output id="identity-margin-value">6 mm</output></label><p class="hint">${multi ? "تغيير الترتيب أو الهوامش يعيد توزيع الصور." : "تغيير الترتيب أو الهوامش يعيد توزيع الوجهين."} الحجم القياسي يحافظ على تناسب الصورة ضمن 85.6 × 54 مم؛ قص حواف البطاقة واطبع بنسبة 100٪.</p><button id="identity-reset" class="secondary">إعادة الترتيب الافتراضي</button></details>
+        <details class="identity-advanced"><summary>خيارات إضافية</summary>${multi ? `<label>عدد الأعمدة<select id="collage-columns"><option value="0">تلقائي</option>${d.pages.map((p, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label>` : ""}<label>الهوامش والتباعد (مم)<input id="identity-margin" type="range" min="0" max="20" value="6"><output id="identity-margin-value">6 mm</output></label><p class="hint">${multi ? "تغيير الترتيب أو الهوامش يعيد توزيع الصور." : "تغيير الترتيب أو الهوامش يعيد توزيع الوجهين."} الحجم القياسي يحافظ على تناسب الصورة ضمن 85.6 × 54 مم؛ قص حواف البطاقة واطبع بنسبة 100٪.</p><button id="identity-reset" class="secondary">إعادة الترتيب الافتراضي</button></details>
       </div>
       <section id="identity-crop-panel" hidden><p class="hint">حرّك زوايا الإطار لتحديد الجزء المطلوب من الوجه.</p><div id="identity-crop-board"></div><div class="identity-toolbar"><button id="identity-crop-apply" class="primary">تطبيق القص</button><button id="identity-crop-cancel" class="secondary">رجوع بدون قص</button><button id="identity-crop-reset" class="secondary">إعادة ضبط القص</button></div></section>`,
       [
@@ -421,7 +421,7 @@ export function createWorkspaceTools({
       return;
     }
     function layout() {
-      if(multi)$('#collage-columns').value=String(columns);
+      if (multi) $("#collage-columns").value = String(columns);
       editor.preset({
         vertical,
         landscape,
@@ -445,7 +445,11 @@ export function createWorkspaceTools({
       );
     }
     layout();
-    if(multi)$('#collage-columns').onchange=e=>{columns=Number(e.target.value);layout();};
+    if (multi)
+      $("#collage-columns").onchange = (e) => {
+        columns = Number(e.target.value);
+        layout();
+      };
     previewButton.disabled = false;
     if (multi) {
       for (const button of $("#modal-body").querySelectorAll(
@@ -581,7 +585,11 @@ export function createWorkspaceTools({
                   sourceKind:
                     title === "صور شخصية"
                       ? "passport"
-                      : title === "هوية بوجهين" ? "identity" : title === "عدة صفحات في صفحة واحدة" ? "composition" : "derived",
+                      : title === "هوية بوجهين"
+                        ? "identity"
+                        : title === "عدة صفحات في صفحة واحدة"
+                          ? "composition"
+                          : "derived",
                 },
               ],
               category,
@@ -605,55 +613,69 @@ export function createWorkspaceTools({
     });
     panel.scrollIntoView({ block: "start" });
   }
-  function book(d) {
-    let active = true,
-      sourceUrl;
-    const page = d.pages[0];
+  const bookDeps = () => ({
+    modal,
+    button,
+    close,
+    run,
+    toast,
+    cleanup,
+    onSaved: onBookSaved,
+  });
+  async function book(d) {
+    return openBookWorkflow(d, bookDeps());
+  }
+  async function editBookSources(id, pageIds) {
+    const source = await getDoc(id);
+    if (!source || source.deleted || source.trashed)
+      return toast("الصور الأصلية غير متاحة");
+    const pages = pageIds
+      .map((id) => source.pages.find((p) => p.id === id))
+      .filter(Boolean);
+    context = null;
+    return book({ ...source, pages });
+  }
+  async function editBook(id, pageId) {
+    context = null;
+    return editSavedBook(id, bookDeps(), pageId);
+  }
+  async function bookOrigins(id, pageId) {
+    context = null;
+    const d = await getDoc(id),
+      source = await getDoc(d?.book?.sourceDocumentId);
+    if (!source || source.deleted || source.trashed)
+      return toast("الصور الأصلية غير متاحة؛ النسخة الجاهزة ما زالت محفوظة");
+    const groups = d.book.groups.filter(
+        (g) => !pageId || g.sourcePageId === pageId,
+      ),
+      urls = [];
     modal(
-      "مسح كتاب",
-      `<p class="hint">خط المنتصف تقديري. عدّله قبل تقسيم الصفحتين. هذه الأداة لا تفرد انحناء الورق.</p><label>اختر صفحة<select id="book-page">${pageOptions(d)}</select></label><label>خط المنتصف (%)<input id="book-center" type="range" min="15" max="85" step="0.5" value="50"></label><label><input id="book-rtl" type="checkbox" checked> ترتيب الأجزاء من اليمين لليسار</label><label><input id="book-clean" type="checkbox"> تنظيف الخلفية والظلال</label><div class="book-preview"><img id="book-image" alt="معاينة الكتاب"><i id="book-seam"></i></div>`,
+      "صور الكتاب الأصلية",
+      `<p class="hint">الأصول محفوظة في مستند مستقل عن الصفحات الجاهزة.</p><div id="book-original-list"></div>`,
       [
-        button(
-          "إضافة الصفحات",
-          () => {
-            const page = d.pages[Number($("#book-page").value)],
-              options = {
-                center: Number($("#book-center").value) / 100,
-                rtl: $("#book-rtl").checked,
-                clean: $("#book-clean").checked,
-              };
-            close();
-            run("حفظ الصفحات…", async () => {
-              const canvases = await Imaging.splitBook(page.blob, options);
-              const pages = [];
-              for (const c of canvases)
-                pages.push(newPage(await Core.toBlob(c), c.width, c.height));
-              await append(d.id, pages, "book");
-            });
-          },
-          true,
+        button("فتح مستند الأصول", () =>
+          selectDocument(
+            source.id,
+            groups.map((g) => g.sourcePageId),
+          ),
         ),
-        button("إلغاء", close),
+        button("إغلاق", close),
       ],
     );
-    async function update() {
-      const page = d.pages[Number($("#book-page").value)];
-      if (sourceUrl) URL.revokeObjectURL(sourceUrl);
-      sourceUrl = URL.createObjectURL(page.blob);
-      $("#book-image").src = sourceUrl;
-      const center = await Imaging.findBookCenter(page.blob);
-      if (!active) return;
-      $("#book-center").value = String(center * 100);
-      $("#book-seam").style.left = center * 100 + "%";
+    for (const g of groups) {
+      const p = source.pages.find((p) => p.id === g.sourcePageId);
+      if (!p) continue;
+      const article = document.createElement("article"),
+        image = document.createElement("img"),
+        edit = button("تعديل التقسيم", () => editBook(id, g.sourcePageId));
+      image.src = URL.createObjectURL(p.blob);
+      image.className = "quality-preview";
+      image.alt = t("صورة أصلية");
+      urls.push(image.src);
+      article.append(image, edit);
+      $("#book-original-list").append(article);
     }
-    $("#book-page").onchange = () => update().catch((e) => toast(e.message));
-    $("#book-center").oninput = (e) =>
-      ($("#book-seam").style.left = e.target.value + "%");
-    cleanup(() => {
-      active = false;
-      if (sourceUrl) URL.revokeObjectURL(sourceUrl);
-    });
-    update().catch((e) => toast(e.message));
+    cleanup(() => urls.forEach(URL.revokeObjectURL));
   }
   function stamp(d) {
     modal(
@@ -1009,5 +1031,12 @@ export function createWorkspaceTools({
     context = { tool: "collage", source, pages };
     return launch("collage", { ...source, pages });
   }
-  return { choose, editIdentity, editComposition };
+  return {
+    choose,
+    editIdentity,
+    editComposition,
+    editBookSources,
+    editBook,
+    bookOrigins,
+  };
 }
