@@ -47,5 +47,47 @@
         }
       ]
     }
-  }
+  },
+  "shortcuts": [
+    {
+      "name": "مسح جديد",
+      "url": "./?tool=scan",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "استخراج النص",
+      "url": "./?tool=ocr",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "هوية بوجهين",
+      "url": "./?tool=id",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "التوقيع",
+      "url": "./?tool=signature",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

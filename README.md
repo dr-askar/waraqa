@@ -162,3 +162,11 @@ Validation: `npm run test:phase-one` exercises thumbnails, non-blocking jobs, co
 - **Storage and backup** shows approximate image bytes, browser-reported site usage/quota, requests persistent storage, and links to backup/restore. Image byte totals may count identical blobs reconstructed separately after encryption; browser quota and usage include tools and other origin data. Preparing a backup is recorded separately from confirming its external save. Persistent storage cannot protect against explicitly clearing app/browser data.
 
 These changes retain six interface languages, local encryption, native Android sharing and offline use. `npm run test:remaining-phases` checks Arabic/OCR search, concurrent-safe bulk moves, trash Undo, combined export, preferences, real PDF size reduction and text coordinates, review/storage interfaces and offline restart. No Google OAuth configuration, cloud OCR, cursive-handwriting model or book dewarping service is added by these phases.
+
+## Expanded web workspace
+
+Waraqa remains the same installable website. Its quick-access/tools/navigation components now use React and TypeScript built with Vite, with typed application operations and an adapter to the existing encrypted database. New workflows include ID composites, book-page splitting, timestamps/location, passport print sheets, bounded part composition, PPTX/long-image export, document-linked reading assistance, simple editable LaTeX, categories, encrypted local profile and optional PWA notification shortcuts.
+
+See [the implementation and review record](docs/EXPANDED-IMPLEMENTATION.md) for exact capability boundaries, migration details and validation. Math extraction, background filling, manual overlap composition and extractive reading must not be described as specialized Math OCR, semantic inpainting, automatic projective stitching or a generative model. The optional WebGPU generative engine is experimental and downloads its model only after an explicit action.
+
+Run `npm run build`, `npm run check`, `npm test` and `npm run test:workspace`, plus the existing regression scripts. The APK and original database remain compatible; no native camera/widget/background SDK is added by this web update. Direct Drive authorization still needs an owner-provided OAuth setup.

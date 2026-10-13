@@ -32,6 +32,7 @@ jobs:
       - run: npm run test:ui
       - run: npm run test:phase-one
       - run: npm run test:remaining-phases
+      - run: npm run test:workspace
       - run: npm run test:browser
       - run: npm run test:advanced
       - run: npm run test:ocr
@@ -51,6 +52,7 @@ jobs:
             checks/*.pdf
             checks/*.docx
             checks/*.xlsx
+            checks/*.pptx
             checks/*.csv
             checks/*.txt
           if-no-files-found: ignore

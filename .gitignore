@@ -19,3 +19,6 @@ android/local.properties
 *.jks
 *.keystore
 *.idsig
+
+checks/*.pptx
+dist/workspace/*.map
