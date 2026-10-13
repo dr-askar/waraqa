@@ -340,11 +340,25 @@ export function createWorkspaceTools({
       openCamera("id");
     };
   }
+  let pendingPreview = null;
   async function guardedPreview(calculate, title, id, category) {
-    const epoch = getEpoch(),
-      canvas = await calculate();
-    if (isOpen() && getEpoch() === epoch)
-      showCanvas(canvas, title, id, category);
+    const epoch = getEpoch();
+    if (pendingPreview === epoch) return;
+    pendingPreview = epoch;
+    const controls = [...$('#modal-actions').querySelectorAll('button')].filter(b => b.textContent.includes(t('معاينة')));
+    const status = document.createElement('p');
+    status.setAttribute('role', 'status');
+    status.textContent = t('جاري تجهيز المعاينة…');
+    $('#modal-body').append(status);
+    controls.forEach(b => b.disabled = true);
+    try {
+      const canvas = await calculate();
+      if (isOpen() && getEpoch() === epoch) await showCanvas(canvas, title, id, category);
+    } finally {
+      status.remove();
+      controls.forEach(b => b.disabled = false);
+      if (pendingPreview === epoch) pendingPreview = null;
+    }
   }
   async function showCanvas(canvas, title, id, category) {
     const epoch = getEpoch(),
