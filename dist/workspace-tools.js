@@ -88,6 +88,7 @@ export function createWorkspaceTools({
   }
   const names = {
     id: "هوية بوجهين",
+    collage: "عدة صفحات في صفحة واحدة",
     book: "مسح كتاب",
     stamp: "ختم الوقت والموقع",
     passport: "صور شخصية",
@@ -183,8 +184,15 @@ export function createWorkspaceTools({
   function pickPages(tool, d, initial = []) {
     context = null;
     const single = singles.has(tool),
-      limit = tool === "id" ? 2 : single ? 1 : tool === "mega" ? 12 : Infinity,
-      min = ["id", "mega"].includes(tool) ? 2 : 1;
+      limit =
+        tool === "id"
+          ? 2
+          : single
+            ? 1
+            : ["mega", "collage"].includes(tool)
+              ? 12
+              : Infinity,
+      min = ["id", "mega", "collage"].includes(tool) ? 2 : 1;
     const chosen = new Set(initial);
     modal(
       names[tool],
@@ -300,6 +308,7 @@ export function createWorkspaceTools({
       return;
     }
     if (tool === "id") await identity(d);
+    else if (tool === "collage") await identity(d, true);
     else if (tool === "book") book(d);
     else if (tool === "stamp") stamp(d);
     else if (tool === "passport") passport(d);
@@ -321,7 +330,9 @@ export function createWorkspaceTools({
           `<option value="${i}">${t("صفحة {n}", { n: context ? context.source.pages.findIndex((x) => x.id === p.id) + 1 : i + 1 })}</option>`,
       )
       .join("");
-  async function identity(d) {
+  async function identity(d, multi = false) {
+    const title = multi ? "عدة صفحات في صفحة واحدة" : "هوية بوجهين";
+    let columns = 0;
     let editor,
       crop,
       active = true,
@@ -329,14 +340,14 @@ export function createWorkspaceTools({
       vertical = true,
       landscape = false;
     modal(
-      "هوية بوجهين",
+      title,
       `
-      <p class="hint">اسحب الوجه لتحريكه، أو اسحب مقبض الزاوية لتغيير حجمه. الأصلان يبقيان محفوظين.</p>
+      <p class="hint">${multi ? "اختر الصورة ثم اسحبها، أو اسحب مقبض الزاوية لتغيير حجمها. تبقى الصور الأصلية محفوظة." : "اسحب الوجه لتحريكه، أو اسحب مقبض الزاوية لتغيير حجمه. الأصلان يبقيان محفوظين."}</p>
       <div id="identity-controls">
-        <div class="identity-face-tabs"><button id="identity-front" class="secondary">الوجه الأمامي</button><button id="identity-back" class="secondary">الوجه الخلفي</button></div>
+        <div class="identity-face-tabs">${multi ? d.pages.map((p, i) => `<button data-compose-item="${i}" class="secondary">${esc(t("الصورة {n}", { n: i + 1 }))}</button>`).join("") : '<button id="identity-front" class="secondary">الوجه الأمامي</button><button id="identity-back" class="secondary">الوجه الخلفي</button>'}</div>${multi ? '<button id="collage-add" class="secondary">إضافة أو تغيير الصور</button>' : '<button id="identity-multiple" class="secondary">أكثر من صورتين في صفحة</button>'}
         <div class="identity-toolbar" aria-label="ترتيب الوجهين">
           <button id="identity-stacked" class="secondary">فوق بعض</button><button id="identity-side" class="secondary">جنب بعض</button>
-          <button id="identity-orientation" class="secondary">ورقة أفقية</button><button id="identity-swap" class="secondary">تبديل الوجهين</button>
+          ${multi ? '<button id="identity-grid" class="secondary">شبكة تلقائية</button>' : ""}<button id="identity-orientation" class="secondary">ورقة أفقية</button><button id="identity-swap" class="secondary">${multi ? "عكس ترتيب الصور" : "تبديل الوجهين"}</button>
         </div>
         <div id="identity-board" class="identity-board" aria-label="معاينة ورقة الهوية"><p role="status">جاري تجهيز المعاينة…</p></div>
         <p id="identity-selection" role="status"></p>
@@ -344,17 +355,17 @@ export function createWorkspaceTools({
           <button id="identity-standard" class="secondary">حجم بطاقة قياسي</button><button id="identity-fit-width" class="secondary">ملاءمة العرض</button><button id="identity-fit-height" class="secondary">ملاءمة الطول</button>
           <button id="identity-smaller" class="secondary" aria-label="تصغير الوجه">−</button><button id="identity-larger" class="secondary" aria-label="تكبير الوجه">+</button>
         </div>
-        <div class="identity-toolbar"><button id="identity-crop" class="secondary">قص الوجه</button><button id="identity-rotate" class="secondary">تدوير 90°</button><button id="identity-equal" class="secondary">توحيد الحجم</button><button id="identity-center" class="secondary">توسيط الوجه</button></div>
-        <details class="identity-advanced"><summary>خيارات إضافية</summary><label>الهوامش والتباعد (مم)<input id="identity-margin" type="range" min="0" max="20" value="6"><output id="identity-margin-value">6 mm</output></label><p class="hint">تغيير الترتيب أو الهوامش يعيد توزيع الوجهين. الحجم القياسي يحافظ على تناسب الصورة ضمن 85.6 × 54 مم؛ قص حواف البطاقة واطبع بنسبة 100٪.</p><button id="identity-reset" class="secondary">إعادة الترتيب الافتراضي</button></details>
+        <div class="identity-toolbar"><button id="identity-crop" class="secondary">${multi ? "قص الصورة" : "قص الوجه"}</button><button id="identity-rotate" class="secondary">تدوير 90°</button><button id="identity-equal" class="secondary">توحيد الحجم</button><button id="identity-center" class="secondary">${multi ? "توسيط الصورة" : "توسيط الوجه"}</button></div>
+        <details class="identity-advanced"><summary>خيارات إضافية</summary>${multi?`<label>عدد الأعمدة<select id="collage-columns"><option value="0">تلقائي</option>${d.pages.map((p,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select></label>`:''}<label>الهوامش والتباعد (مم)<input id="identity-margin" type="range" min="0" max="20" value="6"><output id="identity-margin-value">6 mm</output></label><p class="hint">${multi ? "تغيير الترتيب أو الهوامش يعيد توزيع الصور." : "تغيير الترتيب أو الهوامش يعيد توزيع الوجهين."} الحجم القياسي يحافظ على تناسب الصورة ضمن 85.6 × 54 مم؛ قص حواف البطاقة واطبع بنسبة 100٪.</p><button id="identity-reset" class="secondary">إعادة الترتيب الافتراضي</button></details>
       </div>
       <section id="identity-crop-panel" hidden><p class="hint">حرّك زوايا الإطار لتحديد الجزء المطلوب من الوجه.</p><div id="identity-crop-board"></div><div class="identity-toolbar"><button id="identity-crop-apply" class="primary">تطبيق القص</button><button id="identity-crop-cancel" class="secondary">رجوع بدون قص</button><button id="identity-crop-reset" class="secondary">إعادة ضبط القص</button></div></section>`,
       [
         button("معاينة", () =>
           guardedPreview(
             () => editor.exportCanvas(2480 / state.board.w),
-            "هوية بوجهين",
+            title,
             d.id,
-            "card",
+            multi ? undefined : "card",
           ),
         ),
         button("إلغاء", close),
@@ -374,17 +385,30 @@ export function createWorkspaceTools({
           if (!active) return;
           state = next;
           $("#identity-board").dataset.state = JSON.stringify(next);
-          $("#identity-front").setAttribute(
-            "aria-pressed",
-            String(next.active === 0),
-          );
-          $("#identity-back").setAttribute(
-            "aria-pressed",
-            String(next.active === 1),
-          );
-          $("#identity-selection").textContent = t(
-            next.active === 0 ? "الوجه الأمامي محدد" : "الوجه الخلفي محدد",
-          );
+          if (multi) {
+            for (const button of $("#modal-body").querySelectorAll(
+              "[data-compose-item]",
+            ))
+              button.setAttribute(
+                "aria-pressed",
+                String(Number(button.dataset.composeItem) === next.active),
+              );
+            $("#identity-selection").textContent = t("الصورة {n} محددة", {
+              n: next.active + 1,
+            });
+          } else {
+            $("#identity-front").setAttribute(
+              "aria-pressed",
+              String(next.active === 0),
+            );
+            $("#identity-back").setAttribute(
+              "aria-pressed",
+              String(next.active === 1),
+            );
+            $("#identity-selection").textContent = t(
+              next.active === 0 ? "الوجه الأمامي محدد" : "الوجه الخلفي محدد",
+            );
+          }
         },
         { bounded: true, snap: true },
       );
@@ -397,27 +421,66 @@ export function createWorkspaceTools({
       return;
     }
     function layout() {
+      if(multi)$('#collage-columns').value=String(columns);
       editor.preset({
         vertical,
         landscape,
+        ...(multi
+          ? { columns, rtl: document.documentElement.dir === "rtl" }
+          : {}),
         margin: Number($("#identity-margin").value) * 6,
       });
-      $("#identity-stacked").setAttribute("aria-pressed", String(vertical));
-      $("#identity-side").setAttribute("aria-pressed", String(!vertical));
+      $("#identity-stacked").setAttribute(
+        "aria-pressed",
+        String(multi ? columns === 1 : vertical),
+      );
+      $("#identity-side").setAttribute(
+        "aria-pressed",
+        String(multi ? columns === d.pages.length : !vertical),
+      );
+      if (multi)
+        $("#identity-grid").setAttribute("aria-pressed", String(columns === 0));
       $("#identity-orientation").textContent = t(
         landscape ? "ورقة عمودية" : "ورقة أفقية",
       );
     }
     layout();
+    if(multi)$('#collage-columns').onchange=e=>{columns=Number(e.target.value);layout();};
     previewButton.disabled = false;
-    $("#identity-front").onclick = () => editor.select(0);
-    $("#identity-back").onclick = () => editor.select(1);
+    if (multi) {
+      for (const button of $("#modal-body").querySelectorAll(
+        "[data-compose-item]",
+      ))
+        button.onclick = () =>
+          editor.select(Number(button.dataset.composeItem));
+      $("#identity-grid").onclick = () => {
+        columns = 0;
+        layout();
+      };
+      $("#collage-add").onclick = () =>
+        pickPages(
+          "collage",
+          context.source,
+          d.pages.map((p) => p.id),
+        );
+    } else {
+      $("#identity-front").onclick = () => editor.select(0);
+      $("#identity-back").onclick = () => editor.select(1);
+      $("#identity-multiple").onclick = () =>
+        pickPages(
+          "collage",
+          context.source,
+          d.pages.map((p) => p.id),
+        );
+    }
     $("#identity-stacked").onclick = () => {
       vertical = true;
+      columns = 1;
       layout();
     };
     $("#identity-side").onclick = () => {
       vertical = false;
+      columns = d.pages.length;
       layout();
     };
     $("#identity-orientation").onclick = () => {
@@ -439,6 +502,7 @@ export function createWorkspaceTools({
     };
     $("#identity-reset").onclick = () => {
       vertical = true;
+      columns = 0;
       landscape = false;
       $("#identity-margin").value = "6";
       $("#identity-margin-value").textContent = "6 mm";
@@ -514,7 +578,10 @@ export function createWorkspaceTools({
               [
                 {
                   ...newPage(blob, canvas.width, canvas.height),
-                  sourceKind: title === "صور شخصية" ? "passport" : title === "هوية بوجهين" ? "identity" : "derived",
+                  sourceKind:
+                    title === "صور شخصية"
+                      ? "passport"
+                      : title === "هوية بوجهين" ? "identity" : title === "عدة صفحات في صفحة واحدة" ? "composition" : "derived",
                 },
               ],
               category,
@@ -930,5 +997,17 @@ export function createWorkspaceTools({
     context = { tool: "id", source, pages };
     return launch("id", { ...source, pages });
   }
-  return { choose, editIdentity };
+  async function editComposition(id, pageIds) {
+    const source = getDocuments().find(
+        (d) => d.id === id && !d.deleted && !d.trashed,
+      ),
+      pages = pageIds
+        .map((id) => source?.pages.find((p) => p.id === id))
+        .filter(Boolean);
+    if (!source || pages.length < 2 || pages.length > 12)
+      return toast("اختر من صفحتين إلى 12 صفحة");
+    context = { tool: "collage", source, pages };
+    return launch("collage", { ...source, pages });
+  }
+  return { choose, editIdentity, editComposition };
 }

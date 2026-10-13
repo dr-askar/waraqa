@@ -19,15 +19,78 @@ export function scaleFrame(frame, scale) {
     h,
   };
 }
+export function compositionCells(
+  w,
+  h,
+  count,
+  { vertical = true, margin = 35, columns, rtl = false } = {},
+) {
+  if (!Number.isInteger(count) || count < 2 || count > 12)
+    throw Error("اختر من صفحتين إلى 12 صفحة");
+  if (count === 2 && columns === undefined)
+    return cells(w, h, vertical, margin);
+  const cols =
+    columns === undefined
+      ? vertical
+        ? 1
+        : count
+      : columns === 0
+        ? Math.max(1, Math.min(count, Math.ceil(Math.sqrt((count * w) / h))))
+        : Math.max(1, Math.min(count, Math.round(columns)));
+  const rows = Math.ceil(count / cols),
+    m = Math.max(
+      0,
+      Math.min(margin, Math.min(w / (cols + 1), h / (rows + 1)) * 0.45),
+    ),
+    cw = (w - (cols + 1) * m) / cols,
+    ch = (h - (rows + 1) * m) / rows;
+  return Array.from({ length: count }, (_, i) => {
+    const row = Math.floor(i / cols),
+      items = Math.min(cols, count - row * cols),
+      col = i % cols,
+      offset = ((cols - items) * (cw + m)) / 2;
+    return {
+      x: m + offset + (rtl ? items - 1 - col : col) * (cw + m),
+      y: m + row * (ch + m),
+      w: cw,
+      h: ch,
+    };
+  });
+}
 export async function createComposeEditor(
   host,
   blobs,
   onChange = () => {},
   { bounded = false, snap = false } = {},
 ) {
+  if (blobs.length < 2 || blobs.length > 12)
+    throw Error("اختر من صفحتين إلى 12 صفحة");
   const bitmaps = [];
   try {
-    for (const blob of blobs) bitmaps.push(await image(blob));
+    for (const blob of blobs) {
+      const bitmap = await image(blob),
+        scale =
+          blobs.length > 2
+            ? Math.min(1, 1800 / Math.max(bitmap.width, bitmap.height))
+            : 1;
+      if (scale === 1) bitmaps.push(bitmap);
+      else {
+        let resized;
+        try {
+          resized = makeCanvas(bitmap.width * scale, bitmap.height * scale);
+          resized
+            .getContext("2d")
+            .drawImage(bitmap, 0, 0, resized.width, resized.height);
+          resized.close = () => {
+            resized.width = 1;
+            resized.height = 1;
+          };
+          bitmaps.push(resized);
+        } finally {
+          bitmap.close();
+        }
+      }
+    }
   } catch (error) {
     bitmaps.forEach((b) => b.close());
     throw error;
@@ -36,7 +99,7 @@ export async function createComposeEditor(
     frames = [],
     crops = blobs.map(() => ({ x: 0, y: 0, w: 1, h: 1 })),
     active = 0,
-    zOrder = [0, 1],
+    zOrder = blobs.map((_, i) => i),
     gesture = null,
     cropMode = false,
     disposed = false,
@@ -213,7 +276,7 @@ export async function createComposeEditor(
     if (snap && g.mode === "move") {
       guides = [];
       const f = frames[active],
-        other = frames[1 - active],
+        others = frames.filter((_, i) => i !== active),
         threshold =
           (board.w * 6) / Math.max(1, canvas.getBoundingClientRect().width);
       for (const [axis, size] of [
@@ -223,13 +286,11 @@ export async function createComposeEditor(
         const dimension = axis === "x" ? board.w : board.h;
         const targets = [
           dimension / 2,
-          ...(other
-            ? [
-                other[axis],
-                other[axis] + other[size] / 2,
-                other[axis] + other[size],
-              ]
-            : []),
+          ...others.flatMap((other) => [
+            other[axis],
+            other[axis] + other[size] / 2,
+            other[axis] + other[size],
+          ]),
         ];
         let best = null;
         for (const target of targets)
@@ -286,6 +347,8 @@ export async function createComposeEditor(
     margin = 35,
     size = "a4",
     swap = false,
+    columns,
+    rtl = false,
   } = {}) {
     inset = margin;
     guides = [];
@@ -302,10 +365,19 @@ export async function createComposeEditor(
           : [1190, 1684];
     canvas.width = board.w;
     canvas.height = board.h;
-    const areas = cells(board.w, board.h, vertical, margin);
+    const areas = compositionCells(board.w, board.h, bitmaps.length, {
+      vertical,
+      margin,
+      columns,
+      rtl,
+    });
     frames = bitmaps.map((b, i) => {
       const c = crops[i];
-      return fitRect(b.width * c.w, b.height * c.h, areas[swap ? 1 - i : i]);
+      return fitRect(
+        b.width * c.w,
+        b.height * c.h,
+        areas[swap ? areas.length - 1 - i : i],
+      );
     });
     changed();
   }
@@ -517,11 +589,15 @@ export async function createComposeEditor(
       changed();
     },
     swap() {
-      const [a, b] = frames;
-      frames = [
-        { ...a, x: b.x + (b.w - a.w) / 2, y: b.y + (b.h - a.h) / 2 },
-        { ...b, x: a.x + (a.w - b.w) / 2, y: a.y + (a.h - b.h) / 2 },
-      ];
+      const previous = frames;
+      frames = previous.map((f, i) => {
+        const target = previous[previous.length - 1 - i];
+        return {
+          ...f,
+          x: target.x + (target.w - f.w) / 2,
+          y: target.y + (target.h - f.h) / 2,
+        };
+      });
       changed();
     },
     exportCanvas(scale = 1) {

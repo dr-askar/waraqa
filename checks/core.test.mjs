@@ -19,3 +19,6 @@ test('OCR rotation is inverted when locating words on the original page',()=>{co
 
 import {splitGridRects} from '../dist/core.js';
 test('mixed horizontal and vertical cuts cover each pixel once in RTL row order',()=>{const rects=splitGridRects(101,79,[.25,.7],[.3,.6]);assert.equal(rects.length,9);const pixels=new Uint8Array(101*79);for(const r of rects)for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)pixels[y*101+x]++;assert.ok(pixels.every(n=>n===1));assert.equal(rects[0].x,71);assert.equal(rects[3].y,24);assert.throws(()=>splitGridRects(100,100,[.1,.2,.3,.4,.5],[.1,.2,.3,.4,.5]));});
+
+import {compositionCells} from '../dist/compose-editor.js';
+test('multi-page layouts fit 3 through 12 images in grids, rows and columns without overlap',()=>{for(const count of [2,3,4,7,12])for(const [w,h] of [[1260,1782],[1782,1260]])for(const columns of [0,1,count])for(const rtl of [false,true]){const areas=compositionCells(w,h,count,{columns,margin:120,rtl});assert.equal(areas.length,count);for(const a of areas){assert.ok(a.w>0&&a.h>0&&a.x>=0&&a.y>=0&&a.x+a.w<=w+.001&&a.y+a.h<=h+.001);for(const b of areas)if(a!==b)assert.ok(a.x+a.w<=b.x+.001||b.x+b.w<=a.x+.001||a.y+a.h<=b.y+.001||b.y+b.h<=a.y+.001);} }assert.throws(()=>compositionCells(1260,1782,13));assert.throws(()=>compositionCells(1260,1782,1));});

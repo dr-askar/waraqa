@@ -10,6 +10,7 @@ export const toolGroups = [
     tools: [
       ["scan", "مسح مستند", "scan"],
       ["id", "هوية بوجهين", "documents"],
+      ["collage", "عدة صفحات في صفحة واحدة", "merge"],
       ["book", "مسح كتاب", "split"],
       ["mega", "مسح ممتد", "merge"],
       ["passport", "صور شخصية", "documents"],

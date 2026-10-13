@@ -9092,6 +9092,11 @@ var n = Object.create, r = Object.defineProperty, i = Object.getOwnPropertyDescr
 				"documents"
 			],
 			[
+				"collage",
+				"عدة صفحات في صفحة واحدة",
+				"merge"
+			],
+			[
 				"book",
 				"مسح كتاب",
 				"split"

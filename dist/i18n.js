@@ -1,6 +1,8 @@
 import {catalogs} from "./locales.js";
 import {UI_LANGUAGES} from "./languages.js";
 const strings={
+'عدة صفحات في صفحة واحدة':'Multiple pages on one sheet','أكثر من صورتين في صفحة':'More than two images on one sheet','إضافة أو تغيير الصور':'Add or change images','شبكة تلقائية':'Automatic grid','عكس ترتيب الصور':'Reverse image order','الصورة {n}':'Image {n}','الصورة {n} محددة':'Image {n} selected','حدد صفحة لتعديلها، أو من 2 إلى 12 صفحة لجمعها في صفحة واحدة.':'Select a page to edit, or 2 to 12 pages to compose on one sheet.',
+
 'هوامش وتباعد':'Margins and spacing','الوجه الأمامي محدد':'Front selected','الوجه الخلفي محدد':'Back selected','ورقة عمودية':'Portrait sheet','ورقة أفقية':'Landscape sheet','حجم بطاقة قياسي':'Standard card size','ملاءمة العرض':'Fit width','ملاءمة الطول':'Fit height','قص الوجه':'Crop side','توسيط الوجه':'Center side','توحيد الحجم':'Match size','تبديل الوجهين':'Swap sides','فوق بعض':'Stacked','جنب بعض':'Side by side','إعادة الترتيب الافتراضي':'Reset layout','خيارات إضافية':'More options','تطبيق القص':'Apply crop','رجوع بدون قص':'Back without cropping','إعادة ضبط القص':'Reset crop',
 
 'اختر الأداة، ثم المستند والصفحات':'Choose a tool, then a document and pages','بحث عن أداة':'Search tools','لا توجد أدوات مطابقة':'No matching tools',
