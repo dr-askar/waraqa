@@ -36,6 +36,7 @@ jobs:
       - run: npm run test:remaining-phases
       - run: npm run test:workspace
       - run: npm run test:browser
+      - run: npm run test:repair
       - run: npm run test:signature
       - run: npm run test:advanced
       - run: npm run test:ocr
