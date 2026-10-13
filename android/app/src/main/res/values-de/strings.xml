@@ -4,4 +4,18 @@
  <string name="load_error">Verbinde dich beim ersten Start mit dem Internet. Tippe zum Wiederholen. Nach dem Laden sind lokale Funktionen offline verfügbar.</string>
  <string name="receiving">Dateien werden empfangen…</string>
  <string name="share_file">Datei teilen</string>
+ <string name="notification_channel">Waraqa — Schnellzugriff</string>
+ <string name="notification_description">Optionale Kurzbefehle zum Scannen und Bearbeiten</string>
+ <string name="notification_blocked">Benachrichtigungen in Android erlauben und erneut versuchen</string>
+ <string name="notification_capture">Scannen und aufnehmen</string>
+ <string name="notification_capture_body">Erweitern für Scan, Ausweis oder Buch</string>
+ <string name="notification_edit">Dokumente bearbeiten</string>
+ <string name="notification_edit_body">Erweitern für Texterkennung, Unterschrift und Werkzeuge</string>
+ <string name="notification_summary">Zwei Bereiche mit sechs Kurzbefehlen</string>
+ <string name="shortcut_scan">Scannen</string>
+ <string name="shortcut_id">Ausweis</string>
+ <string name="shortcut_book">Buch</string>
+ <string name="shortcut_ocr">Text erkennen</string>
+ <string name="shortcut_signature">Unterschrift</string>
+ <string name="shortcut_tools">Werkzeuge</string>
 </resources>

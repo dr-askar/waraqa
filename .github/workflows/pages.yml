@@ -77,6 +77,7 @@ jobs:
         run: |
           cd dist/android
           sha256sum --check SHA256SUMS
+          python ../../checks/apk-metadata.py
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs waraqa-android.apk
       - name: Enable emulator acceleration
         run: |
