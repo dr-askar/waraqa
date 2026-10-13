@@ -1,6 +1,9 @@
 import {catalogs} from "./locales.js";
 import {UI_LANGUAGES} from "./languages.js";
 const strings={
+'اختر الأداة، ثم المستند والصفحات':'Choose a tool, then a document and pages','بحث عن أداة':'Search tools','لا توجد أدوات مطابقة':'No matching tools',
+'اختر الصفحات':'Choose pages','تغيير الصفحات':'Change pages','عدد الصفحات: {n}':'Pages: {n}','لا توجد مستندات مطابقة':'No matching documents','اختر صفحة واحدة':'Choose one page','اختر الوجه الأمامي ثم الخلفي':'Choose the front, then the back','اختر من صفحتين إلى 12 صفحة':'Choose 2 to 12 pages','حدد الصفحات التي تريد العمل عليها':'Select the pages to use','رجوع للمستندات':'Back to documents','تم تحديد {n} صفحة':'{n} pages selected','الحد الأقصى: {n} صفحة':'Maximum: {n} pages','تُضاف نسخة جديدة إلى':'A new copy will be added to','تبقى الصفحات الأصلية محفوظة':'Original pages are preserved','تعديل الإعدادات':'Adjust settings',
+
 'مكتبتك':'Your library','مسح بالكاميرا':'Scan with camera','استيراد صور':'Import images','مستند جديد':'New document','من الورق إلى الوضوح':'From paper to clarity','صوّر. رتّب.':'Scan. Organize.','وخليها معك.':'Keep it with you.','امسح بالكاميرا أو استورد صورك.':'Capture or import images.','قصّها، حسّنها، واحفظها PDF.':'Crop, enhance and save as PDF.','كل المعالجة على جهازك':'Processed on your device','مستندات':'Documents','صفحات محفوظة':'Saved pages','في المفضلة':'Favorites','مساحتك الخاصة':'Your private space','عرض البطاقات':'Card view','عرض القائمة':'List view','طريقة عرض المستندات':'Document display','تثبيت التطبيق':'Install app','استيراد أول مستند':'Import your first document','المكتبة':'Library','صفحات':'Pages','تصوير':'Camera','تصدير ومشاركة':'Export & share','أضف صفحة جديدة':'Add another page','فتح':'Open','تدوير':'Rotate','المزيد':'More','خيارات المستند':'Document options','المزيد من أدوات الصفحة':'More page tools','المحذوفات':'Trash',
 'للأمام':'Bring forward','للخلف':'Send backward',
 'معاينة القص':'Preview crop',
