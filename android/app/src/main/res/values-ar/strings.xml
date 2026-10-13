@@ -4,4 +4,18 @@
  <string name="load_error">يلزم اتصال بالإنترنت عند أول فتح. اضغط لإعادة المحاولة. بعد تحميل التطبيق، تبقى الميزات المحلية متاحة بدون إنترنت.</string>
  <string name="receiving">جاري استقبال الملفات…</string>
  <string name="share_file">مشاركة الملف</string>
+ <string name="notification_channel">ورقة — أدوات سريعة</string>
+ <string name="notification_description">اختصارات اختيارية لمسح المستندات وتعديلها</string>
+ <string name="notification_blocked">اسمح بالإشعارات من إعدادات أندرويد ثم أعد المحاولة</string>
+ <string name="notification_capture">مسح والتقاط</string>
+ <string name="notification_capture_body">وسّع الإشعار للمسح أو تصوير هوية أو كتاب</string>
+ <string name="notification_edit">تعامل مع مستنداتك</string>
+ <string name="notification_edit_body">وسّع الإشعار لاستخراج النص والتوقيع والأدوات</string>
+ <string name="notification_summary">لوحتان بستة اختصارات سريعة</string>
+ <string name="shortcut_scan">مسح</string>
+ <string name="shortcut_id">هوية</string>
+ <string name="shortcut_book">كتاب</string>
+ <string name="shortcut_ocr">استخراج نص</string>
+ <string name="shortcut_signature">توقيع</string>
+ <string name="shortcut_tools">الأدوات</string>
 </resources>

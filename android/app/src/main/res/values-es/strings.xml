@@ -4,4 +4,18 @@
  <string name="load_error">Conéctate a Internet en el primer inicio. Pulsa para reintentar. Después de cargar, las funciones locales están disponibles sin conexión.</string>
  <string name="receiving">Recibiendo archivos…</string>
  <string name="share_file">Compartir archivo</string>
+ <string name="notification_channel">Waraqa — acceso rápido</string>
+ <string name="notification_description">Accesos opcionales para escanear y editar</string>
+ <string name="notification_blocked">Permite las notificaciones en Android y vuelve a intentarlo</string>
+ <string name="notification_capture">Escanear y capturar</string>
+ <string name="notification_capture_body">Amplía para escanear un documento, una tarjeta o un libro</string>
+ <string name="notification_edit">Trabajar con documentos</string>
+ <string name="notification_edit_body">Amplía para extraer texto, firmar o abrir herramientas</string>
+ <string name="notification_summary">Dos paneles con seis accesos</string>
+ <string name="shortcut_scan">Escanear</string>
+ <string name="shortcut_id">Tarjeta</string>
+ <string name="shortcut_book">Libro</string>
+ <string name="shortcut_ocr">Extraer texto</string>
+ <string name="shortcut_signature">Firma</string>
+ <string name="shortcut_tools">Herramientas</string>
 </resources>

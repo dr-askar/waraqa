@@ -109,7 +109,7 @@ GitHub Actions يبني الأدوات ويشغل هذه الاختبارات ق
 استكشاف المشاركة: الإصدار 5.2.1 يحدّث manifest من الشبكة أولاً مع نسخة للعمل بدون إنترنت. «فحص التحديث» يتحقق من الإعداد ويطلب فحص Service Worker؛ لا يجبر تحديث WebAPK في Android. «تجربة مشاركة صورة» يفتح قائمة النظام بصورة تجريبية محلية. ظهور نافذة التطبيق أو حدث appinstalled لا يثبت تسجيل هدف المشاركة، ولهذا لا تعرض الواجهة تأكيداً بذلك.
 
 
-## نسخة Android الأصلية 6.0.0
+## نسخة Android الأصلية 6.1.0
 
 [تنزيل APK](https://dr-askar.github.io/waraqa/android/waraqa-android.apk). تتطلب Android 8 أو أحدث وAndroid System WebView محدثاً. أول فتح يحتاج الإنترنت لتحميل واجهة الموقع؛ يخزّن عامل الخدمة الواجهة للاستخدام المحلي لاحقاً. تحتاج نماذج OCR التنزيل عند أول استخدام لكل لغة.
 
@@ -174,3 +174,7 @@ Waraqa remains the same installable website. Its quick-access/tools/navigation c
 See [the implementation and review record](docs/EXPANDED-IMPLEMENTATION.md) for exact capability boundaries, migration details and validation. Math extraction, background filling, manual overlap composition and extractive reading must not be described as specialized Math OCR, semantic inpainting, automatic projective stitching or a generative model. The optional WebGPU generative engine is experimental and downloads its model only after an explicit action.
 
 Run `npm run build`, `npm run check`, `npm test` and `npm run test:workspace`, plus the existing regression scripts. The APK and original database remain compatible; no native camera/widget/background SDK is added by this web update. Direct Drive authorization still needs an owner-provided OAuth setup.
+
+### إشعارات أندرويد 6.1.0
+
+نسخة APK 6.1.0 تدعم إشعارات أصلية اختيارية: لوحتان بستة اختصارات للمسح والهوية والكتاب والنص والتوقيع والأدوات، مع تشغيل وإيقاف وإذن أندرويد وإعداداته من داخل التطبيق. هذا التحديث يحتاج تثبيت APK الجديد فوق السابق؛ تحديث الموقع وحده لا يضيف دعم النظام لنسخة APK قديمة. اقرأ [التنفيذ والحدود والتحقق](docs/NATIVE-NOTIFICATIONS.md).

@@ -1,9 +1,9 @@
 {
-  "version": "6.0.0",
-  "versionCode": 60001,
+  "version": "6.1.0",
+  "versionCode": 60100,
   "package": "dev.waraqa.android",
   "minAndroid": "8.0",
-  "sha256": "4de3534e19dff3b398e3913531bf9e88827c5763d270ae04815626916aedbc56",
-  "size": 1733472,
+  "sha256": "6f18138a84969180364568fbfdbf735b0765d05bee62414d459850c366b9df5e",
+  "size": 1745816,
   "certificateSha256": "8f1b09425def86c8165e03b2e901d06d1cdb83d991e5985f64a945521e68e8b8"
 }

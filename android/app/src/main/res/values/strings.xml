@@ -4,4 +4,18 @@
  <string name="load_error">Connect to the internet on first launch. Tap to retry. After loading, local features remain available offline.</string>
  <string name="receiving">Receiving files…</string>
  <string name="share_file">Share file</string>
+ <string name="notification_channel">Waraqa quick tools</string>
+ <string name="notification_description">Optional shortcuts for scanning and editing documents</string>
+ <string name="notification_blocked">Allow notifications in Android settings, then try again</string>
+ <string name="notification_capture">Scan and capture</string>
+ <string name="notification_capture_body">Expand this notification to scan, capture an ID or scan a book</string>
+ <string name="notification_edit">Work with your documents</string>
+ <string name="notification_edit_body">Expand this notification for text extraction, signatures and tools</string>
+ <string name="notification_summary">Two panels with six quick actions</string>
+ <string name="shortcut_scan">Scan</string>
+ <string name="shortcut_id">ID card</string>
+ <string name="shortcut_book">Book</string>
+ <string name="shortcut_ocr">Extract text</string>
+ <string name="shortcut_signature">Signature</string>
+ <string name="shortcut_tools">Tools</string>
 </resources>

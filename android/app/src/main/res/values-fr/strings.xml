@@ -4,4 +4,18 @@
  <string name="load_error">Connectez-vous à Internet au premier lancement. Appuyez pour réessayer. Les fonctions locales restent ensuite disponibles hors ligne.</string>
  <string name="receiving">Réception des fichiers…</string>
  <string name="share_file">Partager le fichier</string>
+ <string name="notification_channel">Waraqa — accès rapide</string>
+ <string name="notification_description">Raccourcis facultatifs pour numériser et modifier</string>
+ <string name="notification_blocked">Autorisez les notifications dans Android puis réessayez</string>
+ <string name="notification_capture">Numériser et capturer</string>
+ <string name="notification_capture_body">Développez pour numériser un document, une carte ou un livre</string>
+ <string name="notification_edit">Travailler sur les documents</string>
+ <string name="notification_edit_body">Développez pour extraire le texte, signer ou ouvrir les outils</string>
+ <string name="notification_summary">Deux panneaux avec six raccourcis</string>
+ <string name="shortcut_scan">Numériser</string>
+ <string name="shortcut_id">Carte</string>
+ <string name="shortcut_book">Livre</string>
+ <string name="shortcut_ocr">Extraire le texte</string>
+ <string name="shortcut_signature">Signature</string>
+ <string name="shortcut_tools">Outils</string>
 </resources>

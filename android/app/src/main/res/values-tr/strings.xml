@@ -4,4 +4,18 @@
  <string name="load_error">İlk açılışta internete bağlanın. Tekrar denemek için dokunun. Yüklendikten sonra yerel özellikler çevrimdışı kullanılabilir.</string>
  <string name="receiving">Dosyalar alınıyor…</string>
  <string name="share_file">Dosyayı paylaş</string>
+ <string name="notification_channel">Waraqa — hızlı erişim</string>
+ <string name="notification_description">Tarama ve düzenleme için isteğe bağlı kısayollar</string>
+ <string name="notification_blocked">Android ayarlarında bildirimlere izin verip tekrar deneyin</string>
+ <string name="notification_capture">Tara ve çek</string>
+ <string name="notification_capture_body">Belge, kimlik veya kitap taramak için genişletin</string>
+ <string name="notification_edit">Belgelerle çalışın</string>
+ <string name="notification_edit_body">Metin çıkarma, imza ve araçlar için genişletin</string>
+ <string name="notification_summary">Altı kısayollu iki panel</string>
+ <string name="shortcut_scan">Tara</string>
+ <string name="shortcut_id">Kimlik</string>
+ <string name="shortcut_book">Kitap</string>
+ <string name="shortcut_ocr">Metin çıkar</string>
+ <string name="shortcut_signature">İmza</string>
+ <string name="shortcut_tools">Araçlar</string>
 </resources>
