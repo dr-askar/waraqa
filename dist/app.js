@@ -32,7 +32,7 @@ let sessionLocked=false,settingsLockEnabled=false;
 const doc=()=>docs.find(d=>d.id===current);
 const url=blob=>{const u=URL.createObjectURL(blob);urls.push(u);return u;};
 const button=(label,fn,primary=false)=>{const b=document.createElement('button');b.className=primary?'primary':'secondary';b.innerHTML=icon(/نسخ|نسخة/.test(label)?'copy':/استخراج|نص/.test(label)?'text':/حذف/.test(label)?'trash':/إلغاء|إغلاق/.test(label)?'close':/تنزيل/.test(label)?'download':/التقاط/.test(label)?'camera':'check')+'<span>'+esc(label)+'</span>';b.onclick=()=>{try{const result=fn();if(result?.catch)result.catch(e=>toast(e.message));}catch(e){toast(e.message);}};return b;};
-document.addEventListener('DOMContentLoaded',()=>{$('#busy').oncancel=event=>{event.preventDefault();$('#busy button')?.click();};});
+$('#busy').oncancel=event=>{event.preventDefault();$('#busy button')?.click();};
 function toast(message){$('#toast').textContent=t(message);$('#toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
 async function run(label,fn){if(working)return;working=true;$('#busy-text').textContent=t(label);$('#busy-progress').removeAttribute('value');$('#busy').hidden=false;$('#busy').showModal();try{await fn();await refresh();return true;}catch(error){console.error(error.name);toast(error.message||'تعذر إكمال العملية، حاول مرة ثانية.');return false;}finally{working=false;$('#busy').close();$('#busy').hidden=true;}}
 async function refresh(){if(sessionLocked)return;docs=await allDocs();folderNames=cleanFolders(await getUserPreference('folders'));render();}
