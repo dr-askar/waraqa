@@ -1,6 +1,8 @@
 import {catalogs} from "./locales.js";
 import {UI_LANGUAGES} from "./languages.js";
 const strings={
+'هوامش وتباعد':'Margins and spacing','الوجه الأمامي محدد':'Front selected','الوجه الخلفي محدد':'Back selected','ورقة عمودية':'Portrait sheet','ورقة أفقية':'Landscape sheet','حجم بطاقة قياسي':'Standard card size','ملاءمة العرض':'Fit width','ملاءمة الطول':'Fit height','قص الوجه':'Crop side','توسيط الوجه':'Center side','توحيد الحجم':'Match size','تبديل الوجهين':'Swap sides','فوق بعض':'Stacked','جنب بعض':'Side by side','إعادة الترتيب الافتراضي':'Reset layout','خيارات إضافية':'More options','تطبيق القص':'Apply crop','رجوع بدون قص':'Back without cropping','إعادة ضبط القص':'Reset crop',
+
 'اختر الأداة، ثم المستند والصفحات':'Choose a tool, then a document and pages','بحث عن أداة':'Search tools','لا توجد أدوات مطابقة':'No matching tools',
 'اختر الصفحات':'Choose pages','تغيير الصفحات':'Change pages','عدد الصفحات: {n}':'Pages: {n}','لا توجد مستندات مطابقة':'No matching documents','اختر صفحة واحدة':'Choose one page','اختر الوجه الأمامي ثم الخلفي':'Choose the front, then the back','اختر من صفحتين إلى 12 صفحة':'Choose 2 to 12 pages','حدد الصفحات التي تريد العمل عليها':'Select the pages to use','رجوع للمستندات':'Back to documents','تم تحديد {n} صفحة':'{n} pages selected','الحد الأقصى: {n} صفحة':'Maximum: {n} pages','تُضاف نسخة جديدة إلى':'A new copy will be added to','تبقى الصفحات الأصلية محفوظة':'Original pages are preserved','تعديل الإعدادات':'Adjust settings',
 

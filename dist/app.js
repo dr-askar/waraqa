@@ -1,4 +1,4 @@
-import {identityPage,splitBook,findBookCenter} from './advanced-imaging.js';
+import {splitBook,findBookCenter} from './advanced-imaging.js';
 import {mountWorkspace,categories,categoryLabels} from './workspace/shell.js';
 import {createDocumentActions} from './workspace/actions.js';
 import {documentRepository} from './workspace/repository.js';
@@ -309,7 +309,7 @@ async function openCamera(initialMode='document'){
   latched=true;stable=0;const c=Core.makeCanvas(video.videoWidth,video.videoHeight);c.getContext('2d').drawImage(video,0,0);const target=current,mode=$('#scan-mode').value;
   let blob=await Core.toBlob(c);
   if(mode==='receipt')blob=await Core.toBlob(await Core.enhance(blob,{filter:'gray',contrast:15}));if(mode==='whiteboard')blob=await Core.toBlob(await Core.enhance(blob,{filter:'original',brightness:10,contrast:35}));
-  const saved=await importImages([blob],target);if(!saved)return;captured++;if(mode==='book'){const source=doc().pages.at(-1),center=await findBookCenter(source.original||source.blob);await run('حفظ الصفحات…',async()=>{const canvases=await splitBook(source.original||source.blob,{center,rtl:getLanguage()==='ar'}),pages=[];for(const canvas of canvases)pages.push(newPage(await Core.toBlob(canvas),canvas.width,canvas.height));await documentActions.append(current,pages);await documentActions.categorize(current,'book');scheduleSync();});}else if(mode==='id'&&idFront){const source=[idFront,doc().pages.at(-1)];idFront=null;await run('حفظ…',async()=>{const canvas=await identityPage(source[0].blob,source[1].blob);await documentActions.append(current,[newPage(await Core.toBlob(canvas),canvas.width,canvas.height)]);await documentActions.categorize(current,'card');scheduleSync();});}else if(mode==='id'){idFront=doc().pages.at(-1);}
+  const saved=await importImages([blob],target);if(!saved)return;captured++;if(mode==='book'){const source=doc().pages.at(-1),center=await findBookCenter(source.original||source.blob);await run('حفظ الصفحات…',async()=>{const canvases=await splitBook(source.original||source.blob,{center,rtl:getLanguage()==='ar'}),pages=[];for(const canvas of canvases)pages.push(newPage(await Core.toBlob(canvas),canvas.width,canvas.height));await documentActions.append(current,pages);await documentActions.categorize(current,'book');scheduleSync();});}else if(mode==='id'&&idFront){const targetId=current,pageIds=[idFront.id,doc().pages.at(-1).id];idFront=null;closeModal();await workspaceTools.editIdentity(targetId,pageIds);return;}else if(mode==='id'){idFront=doc().pages.at(-1);}
   if(active&&$('#camera-thumbs')){const img=document.createElement('img');const u=URL.createObjectURL(blob);img.src=u;img.alt=`صفحة ملتقطة ${captured}`;$('#camera-thumbs').append(img);setTimeout(()=>URL.revokeObjectURL(u),60000);$('#camera-guide').textContent=t(mode==='id'&&idFront?'تم تصوير الأمام؛ صوّر الوجه الخلفي':'انضافت الصورة. ضع الصفحة التالية أمام الكاميرا.');}
  }
  try{

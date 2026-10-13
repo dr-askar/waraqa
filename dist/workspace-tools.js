@@ -1,3 +1,4 @@
+import { createComposeEditor } from "./compose-editor.js";
 import { stopLocal } from "./local-assistant.js";
 import * as Core from "./core.js";
 import * as Imaging from "./advanced-imaging.js";
@@ -79,7 +80,9 @@ export function createWorkspaceTools({
           context.pages.map((p) => p.id),
         ),
       );
-      const step = document.createElement("small");step.textContent = "3 / 3 · " + t("الإعدادات");header.append(step, name, info, change);
+      const step = document.createElement("small");
+      step.textContent = "3 / 3 · " + t("الإعدادات");
+      header.append(step, name, info, change);
       $("#modal-body").prepend(header);
     }
   }
@@ -155,7 +158,10 @@ export function createWorkspaceTools({
         name = document.createElement("strong"),
         count = document.createElement("small");
       name.textContent = d.name;
-      count.textContent = t("عدد الصفحات: {n}", { n: d.pages.length }) + " · " + (d.folder || t("المكتبة"));
+      count.textContent =
+        t("عدد الصفحات: {n}", { n: d.pages.length }) +
+        " · " +
+        (d.folder || t("المكتبة"));
       text.append(name, count);
       b.append(text);
       b.onclick = () => pickPages(tool, d);
@@ -293,7 +299,7 @@ export function createWorkspaceTools({
       $("#modal-body").prepend(summary);
       return;
     }
-    if (tool === "id") identity(d);
+    if (tool === "id") await identity(d);
     else if (tool === "book") book(d);
     else if (tool === "stamp") stamp(d);
     else if (tool === "passport") passport(d);
@@ -303,7 +309,7 @@ export function createWorkspaceTools({
     else if (tool === "assistant") reader(d);
     else if (tool === "math") math(d);
     else if (tool === "cleanup") repair(d);
-    if (tool === "id") $("#id-front").closest(".form-row").hidden = true;
+
     if (tool === "mega") $(".mega-pick").hidden = true;
     const selects = $("#modal-body").querySelectorAll('select[id$="-page"]');
     for (const select of selects) select.closest("label").hidden = true;
@@ -315,48 +321,172 @@ export function createWorkspaceTools({
           `<option value="${i}">${t("صفحة {n}", { n: context ? context.source.pages.findIndex((x) => x.id === p.id) + 1 : i + 1 })}</option>`,
       )
       .join("");
-  function identity(d) {
+  async function identity(d) {
+    let editor,
+      crop,
+      active = true,
+      state,
+      vertical = true,
+      landscape = false;
     modal(
       "هوية بوجهين",
-      `<p class="hint">اختر صورة الوجه الأمامي والخلفي بعد تصويرهما أو استيرادهما. تُضاف صفحة A4 وتبقى الأصول محفوظة.</p><div class="form-row"><label>الوجه الأمامي<select id="id-front">${pageOptions(d)}</select></label><label>الوجه الخلفي<select id="id-back">${pageOptions(d)}</select></label></div><button id="id-camera" class="secondary">تصوير الوجهين</button><p class="hint">يمكنك تعديل موضع كل وجه لاحقاً بأداة صفحتان في صفحة.</p>`,
+      `
+      <p class="hint">اسحب الوجه لتحريكه، أو اسحب مقبض الزاوية لتغيير حجمه. الأصلان يبقيان محفوظين.</p>
+      <div id="identity-controls">
+        <div class="identity-face-tabs"><button id="identity-front" class="secondary">الوجه الأمامي</button><button id="identity-back" class="secondary">الوجه الخلفي</button></div>
+        <div class="identity-toolbar" aria-label="ترتيب الوجهين">
+          <button id="identity-stacked" class="secondary">فوق بعض</button><button id="identity-side" class="secondary">جنب بعض</button>
+          <button id="identity-orientation" class="secondary">ورقة أفقية</button><button id="identity-swap" class="secondary">تبديل الوجهين</button>
+        </div>
+        <div id="identity-board" class="identity-board" aria-label="معاينة ورقة الهوية"><p role="status">جاري تجهيز المعاينة…</p></div>
+        <p id="identity-selection" role="status"></p>
+        <div class="identity-toolbar" aria-label="حجم الوجه المحدد">
+          <button id="identity-standard" class="secondary">حجم بطاقة قياسي</button><button id="identity-fit-width" class="secondary">ملاءمة العرض</button><button id="identity-fit-height" class="secondary">ملاءمة الطول</button>
+          <button id="identity-smaller" class="secondary" aria-label="تصغير الوجه">−</button><button id="identity-larger" class="secondary" aria-label="تكبير الوجه">+</button>
+        </div>
+        <div class="identity-toolbar"><button id="identity-crop" class="secondary">قص الوجه</button><button id="identity-rotate" class="secondary">تدوير 90°</button><button id="identity-equal" class="secondary">توحيد الحجم</button><button id="identity-center" class="secondary">توسيط الوجه</button></div>
+        <details class="identity-advanced"><summary>خيارات إضافية</summary><label>الهوامش والتباعد (مم)<input id="identity-margin" type="range" min="0" max="20" value="6"><output id="identity-margin-value">6 mm</output></label><p class="hint">تغيير الترتيب أو الهوامش يعيد توزيع الوجهين. الحجم القياسي يحافظ على تناسب الصورة ضمن 85.6 × 54 مم؛ قص حواف البطاقة واطبع بنسبة 100٪.</p><button id="identity-reset" class="secondary">إعادة الترتيب الافتراضي</button></details>
+      </div>
+      <section id="identity-crop-panel" hidden><p class="hint">حرّك زوايا الإطار لتحديد الجزء المطلوب من الوجه.</p><div id="identity-crop-board"></div><div class="identity-toolbar"><button id="identity-crop-apply" class="primary">تطبيق القص</button><button id="identity-crop-cancel" class="secondary">رجوع بدون قص</button><button id="identity-crop-reset" class="secondary">إعادة ضبط القص</button></div></section>`,
       [
-        button("معاينة", async () => {
-          const front = Number($("#id-front").value),
-            back = Number($("#id-back").value);
-          if (front === back) return toast("اختر صفحتين مختلفتين");
-          await guardedPreview(
-            () => Imaging.identityPage(d.pages[front].blob, d.pages[back].blob),
+        button("معاينة", () =>
+          guardedPreview(
+            () => editor.exportCanvas(2480 / state.board.w),
             "هوية بوجهين",
             d.id,
             "card",
-          );
-        }),
+          ),
+        ),
         button("إلغاء", close),
       ],
     );
-    if (d.pages.length > 1) $("#id-back").value = "1";
-    $("#id-camera").onclick = () => {
-      close();
-      openCamera("id");
+    const previewButton = $("#modal-actions button");
+    previewButton.disabled = true;
+    cleanup(() => {
+      active = false;
+      editor?.destroy();
+    });
+    try {
+      editor = await createComposeEditor(
+        $("#identity-board"),
+        d.pages.map((p) => p.blob),
+        (next) => {
+          if (!active) return;
+          state = next;
+          $("#identity-board").dataset.state = JSON.stringify(next);
+          $("#identity-front").setAttribute(
+            "aria-pressed",
+            String(next.active === 0),
+          );
+          $("#identity-back").setAttribute(
+            "aria-pressed",
+            String(next.active === 1),
+          );
+          $("#identity-selection").textContent = t(
+            next.active === 0 ? "الوجه الأمامي محدد" : "الوجه الخلفي محدد",
+          );
+        },
+        { bounded: true, snap: true },
+      );
+      if (!active) {
+        editor.destroy();
+        return;
+      }
+    } catch (error) {
+      if (active) toast(error.message);
+      return;
+    }
+    function layout() {
+      editor.preset({
+        vertical,
+        landscape,
+        margin: Number($("#identity-margin").value) * 6,
+      });
+      $("#identity-stacked").setAttribute("aria-pressed", String(vertical));
+      $("#identity-side").setAttribute("aria-pressed", String(!vertical));
+      $("#identity-orientation").textContent = t(
+        landscape ? "ورقة عمودية" : "ورقة أفقية",
+      );
+    }
+    layout();
+    previewButton.disabled = false;
+    $("#identity-front").onclick = () => editor.select(0);
+    $("#identity-back").onclick = () => editor.select(1);
+    $("#identity-stacked").onclick = () => {
+      vertical = true;
+      layout();
     };
+    $("#identity-side").onclick = () => {
+      vertical = false;
+      layout();
+    };
+    $("#identity-orientation").onclick = () => {
+      landscape = !landscape;
+      layout();
+    };
+    $("#identity-swap").onclick = () => editor.swap();
+    $("#identity-standard").onclick = () => editor.cardSize();
+    $("#identity-fit-width").onclick = () => editor.fit("width");
+    $("#identity-fit-height").onclick = () => editor.fit("height");
+    $("#identity-smaller").onclick = () => editor.zoom(0.92);
+    $("#identity-larger").onclick = () => editor.zoom(1.08);
+    $("#identity-rotate").onclick = () => editor.rotate();
+    $("#identity-equal").onclick = () => editor.equalize();
+    $("#identity-center").onclick = () => editor.center();
+    $("#identity-margin").oninput = (e) => {
+      $("#identity-margin-value").textContent = e.target.value + " mm";
+      layout();
+    };
+    $("#identity-reset").onclick = () => {
+      vertical = true;
+      landscape = false;
+      $("#identity-margin").value = "6";
+      $("#identity-margin-value").textContent = "6 mm";
+      layout();
+    };
+    function leaveCrop() {
+      crop = null;
+      $("#identity-crop-panel").hidden = true;
+      $("#identity-controls").hidden = false;
+      $("#identity-crop-board").replaceChildren();
+      previewButton.disabled = false;
+    }
+    $("#identity-crop").onclick = () => {
+      crop = editor.cropEditor($("#identity-crop-board"));
+      $("#identity-controls").hidden = true;
+      $("#identity-crop-panel").hidden = false;
+      previewButton.disabled = true;
+    };
+    $("#identity-crop-apply").onclick = () => {
+      crop.apply();
+      leaveCrop();
+    };
+    $("#identity-crop-cancel").onclick = () => {
+      crop.cancel();
+      leaveCrop();
+    };
+    $("#identity-crop-reset").onclick = () => crop.reset();
   }
   let pendingPreview = null;
   async function guardedPreview(calculate, title, id, category) {
     const epoch = getEpoch();
     if (pendingPreview === epoch) return;
     pendingPreview = epoch;
-    const controls = [...$('#modal-actions').querySelectorAll('button')].filter(b => b.textContent.includes(t('معاينة')));
-    const status = document.createElement('p');
-    status.setAttribute('role', 'status');
-    status.textContent = t('جاري تجهيز المعاينة…');
-    $('#modal-body').append(status);
-    controls.forEach(b => b.disabled = true);
+    const controls = [...$("#modal-actions").querySelectorAll("button")].filter(
+      (b) => b.textContent.includes(t("معاينة")),
+    );
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = t("جاري تجهيز المعاينة…");
+    $("#modal-body").append(status);
+    controls.forEach((b) => (b.disabled = true));
     try {
       const canvas = await calculate();
-      if (isOpen() && getEpoch() === epoch) await showCanvas(canvas, title, id, category);
+      if (isOpen() && getEpoch() === epoch)
+        await showCanvas(canvas, title, id, category);
     } finally {
       status.remove();
-      controls.forEach(b => b.disabled = false);
+      controls.forEach((b) => (b.disabled = false));
       if (pendingPreview === epoch) pendingPreview = null;
     }
   }
@@ -384,7 +514,7 @@ export function createWorkspaceTools({
               [
                 {
                   ...newPage(blob, canvas.width, canvas.height),
-                  sourceKind: title === "صور شخصية" ? "passport" : "derived",
+                  sourceKind: title === "صور شخصية" ? "passport" : title === "هوية بوجهين" ? "identity" : "derived",
                 },
               ],
               category,
@@ -789,5 +919,16 @@ export function createWorkspaceTools({
       ],
     );
   }
-  return { choose };
+  async function editIdentity(id, pageIds) {
+    const source = getDocuments().find(
+      (d) => d.id === id && !d.deleted && !d.trashed,
+    );
+    const pages = pageIds
+      .map((id) => source?.pages.find((p) => p.id === id))
+      .filter(Boolean);
+    if (!source || pages.length !== 2) return toast("اختر صفحتين مختلفتين");
+    context = { tool: "id", source, pages };
+    return launch("id", { ...source, pages });
+  }
+  return { choose, editIdentity };
 }
