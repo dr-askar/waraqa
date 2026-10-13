@@ -93,7 +93,10 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: gradle -p android --console=plain connectedDebugAndroidTest
+          script: |
+            gradle -p android --console=plain connectedDebugAndroidTest
+            mkdir -p android/app/build/reports/screenshots
+            adb pull /sdcard/Pictures/WaraqaTests/notification-row.png android/app/build/reports/screenshots/notification-row.png
       - name: Keep Android test and lint reports
         if: always()
         uses: actions/upload-artifact@v4
