@@ -92,7 +92,7 @@ export async function openSignatureEditor(page, deps) {
   $('#center-signature').onclick=()=>{const s=commands[active];if(!s)return;checkpoint();commands[active]={...s,x:(canvas.width-s.w)/2,y:(canvas.height-s.h)/2};draw();};
   $('#delete-signature').onclick=()=>{if(active<0)return;checkpoint();commands.splice(active,1);active=-1;draw();};
   async function task(fn){if(loading)return;loading=true;try{await fn();}catch(error){if(alive)toast(error.message);}finally{loading=false;}}
-  async function place(blob){const bitmap=await Core.image(blob);if(!alive){bitmap.close();return;}bitmaps.add(bitmap);checkpoint();const w=canvas.width*Number($('#signature-size').value)/100;commands.push(fitSignature({kind:'signature',bitmap,x:canvas.width*.1,y:canvas.height*.7,w,h:w*bitmap.height/bitmap.width},canvas.width,canvas.height));mode('select');active=commands.length-1;draw();toast('اسحب التوقيع لمكانه، واضبط حجمه ثم احفظ');}
+  async function place(blob){const bitmap=await Core.image(blob);if(!alive){bitmap.close();return;}bitmaps.add(bitmap);checkpoint();const w=canvas.width*Number($('#signature-size').value)/100;commands.push(fitSignature({kind:'signature',bitmap,x:canvas.width*.1,y:canvas.height*.7,w,h:w*bitmap.height/bitmap.width},canvas.width,canvas.height));mode('select');active=commands.length-1;draw();$('#ink-canvas').scrollIntoView({block:'center'});toast('اسحب التوقيع لمكانه، واضبط حجمه ثم احفظ');}
   $('#save-signature').onclick=()=>task(async()=>{
     const selected=commands[active]?.kind==='signature'?commands[active]:null;
     const ink=selected?Core.makeCanvas(selected.bitmap.width,selected.bitmap.height):Core.makeCanvas(canvas.width,canvas.height);
@@ -114,5 +114,5 @@ export async function openSignatureEditor(page, deps) {
   });};
   cleanup(()=>{alive=false;$('#modal-body').inert=false;source.close();for(const bitmap of bitmaps)bitmap.close();});
   for(const stored of page.annotation?.commands||[]){if(stored.kind==='signature'){const bitmap=await Core.image(Core.dataBlob(stored.data));if(!alive){bitmap.close();return;}bitmaps.add(bitmap);commands.push({...stored,bitmap});}else commands.push(stored);}
-  loading=false;mode('pan');await renderLibrary();if(alive)canvas.dataset.ready='true';
+  loading=false;mode('pan');await renderLibrary();if(alive){$('#modal-body').scrollTop=0;canvas.dataset.ready='true';}
 }
