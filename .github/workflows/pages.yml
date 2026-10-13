@@ -2,6 +2,8 @@ name: Validate and publish Waraqa
 on:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 permissions:
   contents: read
@@ -34,6 +36,7 @@ jobs:
       - run: npm run test:remaining-phases
       - run: npm run test:workspace
       - run: npm run test:browser
+      - run: npm run test:signature
       - run: npm run test:advanced
       - run: npm run test:ocr
       - run: npm run test:directions
@@ -99,6 +102,7 @@ jobs:
             android/app/build/outputs/androidTest-results/
           if-no-files-found: ignore
   deploy:
+    if: github.event_name != 'pull_request'
     needs: [validate, android]
     runs-on: ubuntu-latest
     environment:
