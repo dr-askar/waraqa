@@ -25,3 +25,5 @@ console.log('Browser engines and OCR models prepared on the same origin');
 const client=process.env.WARAQA_GOOGLE_CLIENT_ID||'';if(client&&!/^[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(client))throw Error('Invalid public Google OAuth client ID');await writeFile(path.join(base,'dist/config.js'),'export const GOOGLE_CLIENT_ID='+JSON.stringify(client)+';\n');
 
 await import('./workspace-build.mjs');
+
+await import('./licenses.mjs');

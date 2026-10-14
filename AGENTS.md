@@ -18,3 +18,9 @@
 - Preserve originals, separate derived pages, and support coherent undo/redo. Preview/cancel must not silently modify saved documents.
 - State actual recovery limits honestly. The current three-image-edit history is not global document undo.
 - When changing an editor, test relevant recovery behavior, including original preservation, cancellation, undo/redo, and stale-save rejection where applicable.
+
+## Open-source identity and release preparation
+- Preserve attribution to founder Mohammad Askar (GitHub: dr-askar), established in 2026; do not claim sole ownership of third-party or contributor work.
+- Original project source uses Apache-2.0. Preserve LICENSE/NOTICE, upstream license texts, and contributor rights when changing or distributing code.
+- New assets/dependencies need documented provenance and compatible terms. Keep official signing keys, passwords and private user documents outside Git and public issue reports.
+- Google Play preparation is distinct from a submitted or approved release. Verify current target API requirements, signing continuity, support contact and Data safety against actual behavior before submission.

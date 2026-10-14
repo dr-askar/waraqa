@@ -9,6 +9,9 @@ build_tools=Path(os.environ['ANDROID_HOME'])/'build-tools/35.0.0'
 badging=subprocess.run([str(build_tools/'aapt'),'dump','badging',str(apk)],check=True,capture_output=True,text=True).stdout
 version=re.search(r"versionName '([^']+)'",config).group(1)
 code=int(re.search(r'versionCode (\d+)',config).group(1))
+target=int(re.search(r'targetSdk (\d+)',config).group(1))
+assert metadata.get('targetSdk')==target
+assert f"targetSdkVersion:'{target}'" in badging
 assert metadata['version']==version and metadata['versionCode']==code
 assert f"versionCode='{code}' versionName='{version}'" in badging
 assert f"name='{metadata['package']}'" in badging.splitlines()[0]
@@ -18,4 +21,4 @@ certs=subprocess.run([str(build_tools/'apksigner'),'verify','--print-certs',str(
 assert 'certificate SHA-256 digest: '+metadata['certificateSha256'] in certs
 assert metadata['certificateSha256']=='8f1b09425def86c8165e03b2e901d06d1cdb83d991e5985f64a945521e68e8b8'
 assert 'android.permission.POST_NOTIFICATIONS' in badging
-print(f'PASS: signed APK {version} ({code}), package, permissions, size, SHA-256 and original signing certificate')
+print(f'PASS: signed APK {version} ({code}), target API {target}, package, permissions, size, SHA-256 and original signing certificate')

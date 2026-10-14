@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security guidance / الإبلاغ الأمني
+    url: https://github.com/dr-askar/waraqa/blob/main/SECURITY.md
+    about: Do not disclose vulnerabilities or private documents in public issues.

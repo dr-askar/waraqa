@@ -48,5 +48,14 @@
   },
   "overrides": {
     "image-size": "2.0.3"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dr-askar/waraqa.git"
+  },
+  "homepage": "https://dr-askar.github.io/waraqa/",
+  "bugs": {
+    "url": "https://github.com/dr-askar/waraqa/issues"
   }
 }
