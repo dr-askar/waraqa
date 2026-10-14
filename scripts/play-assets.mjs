@@ -20,7 +20,7 @@ const server=createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(4194,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 try {
-  const context=await browser.newContext({viewport:{width:390,height:693},deviceScaleFactor:1080/390,isMobile:true,hasTouch:true});
+  const context=await browser.newContext({viewport:{width:360,height:640},deviceScaleFactor:3,isMobile:true,hasTouch:true});
   const page=await context.newPage();
   await page.goto('http://127.0.0.1:4194/');
   await page.waitForFunction(()=>document.body.dataset.ready==='true');
