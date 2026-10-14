@@ -61,6 +61,11 @@ jobs:
             checks/*.txt
           if-no-files-found: ignore
   android:
+    name: Android API ${{ matrix.api }}
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [35, 36]
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -71,8 +76,10 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10.2'
-      - run: gradle -p android --console=plain assembleRelease assembleDebugAndroidTest lintRelease
+          gradle-version: '8.11.1'
+      - name: Install Android 36 platform
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"'
+      - run: gradle -p android --console=plain assembleRelease bundleRelease assembleDebugAndroidTest lintRelease
       - name: Verify downloadable APK
         run: |
           cd dist/android
@@ -87,7 +94,7 @@ jobs:
       - name: Test Android share intents and WebView bridge
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -97,11 +104,18 @@ jobs:
             gradle -p android --console=plain connectedDebugAndroidTest
             mkdir -p android/app/build/reports/screenshots
             adb pull /sdcard/Pictures/WaraqaTests/notification-row.png android/app/build/reports/screenshots/notification-row.png
+      - name: Keep unsigned Play preparation bundle
+        if: matrix.api == 36
+        uses: actions/upload-artifact@v4
+        with:
+          name: waraqa-play-unsigned
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
       - name: Keep Android test and lint reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-test-results
+          name: android-test-results-api-${{ matrix.api }}
           path: |
             android/app/build/reports/
             android/app/build/outputs/androidTest-results/

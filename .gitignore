@@ -22,3 +22,7 @@ android/local.properties
 
 checks/*.pptx
 dist/workspace/*.map
+
+dist/licenses/
+*.aab
+__pycache__/

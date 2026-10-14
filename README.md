@@ -4,6 +4,26 @@
 
 **جرّبه: https://dr-askar.github.io/waraqa/**
 
+## مشروع مفتوح المصدر / Open source
+
+بدأ المشروع **Mohammad Askar** ([dr-askar](https://github.com/dr-askar)) عام 2026.
+الكود الأصلي تحت [Apache 2.0](LICENSE)، مع [إشعار الحقوق](NOTICE) و[توثيق المؤسس والمساهمين](AUTHORS.md).
+المكتبات والخطوط والنماذج تحت [رخصها الخاصة](THIRD_PARTY_NOTICES.md).
+
+**المساهمة:** [العربية](CONTRIBUTING.md) · [English](docs/CONTRIBUTING.en.md) ·
+[بنية المشروع](docs/ARCHITECTURE.md) · [السلوك](CODE_OF_CONDUCT.md) · [الأمان](SECURITY.md).
+التعديلات مفتوحة عبر Pull Requests؛ المساهمون يحتفظون بحقوق مساهماتهم.
+[سياسة الاسم والشعار](docs/TRADEMARKS.md) تميز النسخ الرسمية عن النسخ المشتقة.
+
+Waraqa is a local-first document scanner initiated by **Mohammad Askar** in 2026.
+Try the PWA above, or contribute code, translations, device tests and documentation.
+Original source uses Apache 2.0; upstream assets retain their own licenses.
+
+**Google Play:** [حزمة التجهيز والمتطلبات](docs/play/README.md) ·
+[وصف المتجر بالعربية والإنكليزية](docs/play/STORE-LISTING.md) ·
+[مراجعة أمان البيانات](docs/play/DATA-SAFETY.md).
+التطبيق مجاني للمستخدم؛ تجهيز هذه الملفات لا يعني نشره أو إنشاء حساب المطور.
+
 ## قواعد التطوير والتراجع
 
 تعليمات العمل الدائمة في [AGENTS.md](AGENTS.md): فروع مستقلة وطلبات دمج قابلة للمراجعة والتراجع. [قواعد التعديل والتعافي](docs/EDITING-AND-RECOVERY.md) تحدد حفظ الأصول والتراجع والإعادة وحدود التنفيذ الحالية؛ تثبيتها لا يعني إضافة محرك تراجع شامل بالفعل.
@@ -109,7 +129,7 @@ GitHub Actions يبني الأدوات ويشغل هذه الاختبارات ق
 استكشاف المشاركة: الإصدار 5.2.1 يحدّث manifest من الشبكة أولاً مع نسخة للعمل بدون إنترنت. «فحص التحديث» يتحقق من الإعداد ويطلب فحص Service Worker؛ لا يجبر تحديث WebAPK في Android. «تجربة مشاركة صورة» يفتح قائمة النظام بصورة تجريبية محلية. ظهور نافذة التطبيق أو حدث appinstalled لا يثبت تسجيل هدف المشاركة، ولهذا لا تعرض الواجهة تأكيداً بذلك.
 
 
-## نسخة Android الأصلية 6.1.1
+## نسخة Android الأصلية 6.1.2
 
 [تنزيل APK](https://dr-askar.github.io/waraqa/android/waraqa-android.apk). تتطلب Android 8 أو أحدث وAndroid System WebView محدثاً. أول فتح يحتاج الإنترنت لتحميل واجهة الموقع؛ يخزّن عامل الخدمة الواجهة للاستخدام المحلي لاحقاً. تحتاج نماذج OCR التنزيل عند أول استخدام لكل لغة.
 
@@ -180,3 +200,7 @@ Run `npm run build`, `npm run check`, `npm test` and `npm run test:workspace`, p
 نسخة APK 6.1.0 تدعم إشعارات أصلية اختيارية: لوحتان بستة اختصارات للمسح والهوية والكتاب والنص والتوقيع والأدوات، مع تشغيل وإيقاف وإذن أندرويد وإعداداته من داخل التطبيق. هذا التحديث يحتاج تثبيت APK الجديد فوق السابق؛ تحديث الموقع وحده لا يضيف دعم النظام لنسخة APK قديمة. اقرأ [التنفيذ والحدود والتحقق](docs/NATIVE-NOTIFICATIONS.md).
 
 إصدار Android 6.1.1 يستبدل لوحات الاختصارات بإشعار واحد وصف من ست أيقونات مباشرة، ويحتاج تحديث APK فوق السابق.
+
+### تجهيز المصدر المفتوح وGoogle Play — 6.1.2
+
+رخصة Apache 2.0 باسم المؤسس Mohammad Askar، أدلة مساهمة عربية وإنكليزية، إشعارات مكتبات مرفقة بالبناء، وصف متجر ومراجعة خصوصية. غلاف Android يستهدف API 36 وفق متطلبات Google الحالية، مع نفس الحزمة وشهادة الإصدار وversionCode 60102. ملف AAB يُبنى في CI ويحتاج توقيعاً وإعداد Play Console قبل التقديم؛ وجوده لا يعني نشر المتجر. الموقع يبقى نفسه، cache v32، دون تغيير مخطط التخزين.

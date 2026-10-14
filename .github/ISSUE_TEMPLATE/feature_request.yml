@@ -1,0 +1,20 @@
+name: Feature request / اقتراح
+description: Describe a user problem and a practical improvement.
+title: "[Idea]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem / المشكلة التي تواجه المستخدم
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested behavior and alternatives / الحل المقترح والبدائل
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Offline, privacy, language and device considerations / اعتبارات التنفيذ

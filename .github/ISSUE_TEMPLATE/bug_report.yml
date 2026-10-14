@@ -1,0 +1,33 @@
+name: Bug report / مشكلة
+description: Report a reproducible issue using synthetic documents only.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Please search existing issues. لا ترفق هوية أو توقيعاً حقيقياً أو مستنداً خاصاً. Security issues: see SECURITY.md."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and expected result / المشكلة والنتيجة المطلوبة
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps / خطوات تكرار المشكلة
+      description: Include a synthetic sample or redacted screenshot if useful.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device, Android, browser/WebView and app version / الجهاز والإصدارات
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy / الخصوصية
+      options:
+        - label: I removed private documents, signatures, keys and tokens from this report.
+          required: true
