@@ -60,6 +60,11 @@ been made or verified by this preparation.
 - [Data safety review worksheet](DATA-SAFETY.md), not a prefilled declaration.
 - Existing policy: https://dr-askar.github.io/waraqa/privacy.html . Set the final
   responsible-party/support contact before store submission.
+- Generate reviewable artwork and synthetic-data PWA screenshots with
+  `node scripts/play-assets.mjs /absolute/output/directory` after `npm run build`
+  and Playwright Chromium installation. Four phone images are 1080×1920; the
+  feature graphic is 1024×500. Confirm rendering in the native app on real phones
+  before using the captures as store screenshots.
 - Icon: export the project's own square icon to a 512×512 PNG without third-party
   branding. Feature graphic requires 1024×500 artwork; phone screenshots should show
   real app screens with synthetic documents. Do not add unsupported marketing claims.
